@@ -143,7 +143,7 @@ export const site = {
      * 'normal'  — sits at the natural bottom of page content (only visible when scrolled down)
      * 'hidden'  — footer is not rendered at all
      */
-    position: 'normal' as 'sticky' | 'normal' | 'hidden',
+    position: 'sticky' as 'sticky' | 'normal' | 'hidden',
   },
 
   // ─── CV page ───────────────────────────────────────────────────────────────
@@ -435,10 +435,10 @@ export const site = {
      *   Custom hover:     { light: '#0076df', dark: '#68c0d9', hoverLight: '#0a53be', hoverDark: '#9fd8ea' }
      */
     color: {
-      light: '#1f3a68' as string,
-      dark: '#8fb0de' as string,
-      hoverLight: '#14284a' as string,
-      hoverDark: '#b7cdee' as string,
+      light: 'auto' as string,
+      dark: 'auto' as string,
+      hoverLight: 'auto' as string,
+      hoverDark: 'auto' as string,
     },
   },
 } as const;
