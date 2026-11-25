@@ -1,0 +1,205 @@
+---
+import SectionHead from '@components/SectionHead.astro';
+import { site } from '@config/site';
+import Page from '@layouts/Page.astro';
+import { withBase } from '@utils/base';
+
+import IconFacebook from '~icons/fa-brands/facebook';
+import IconGithub from '~icons/fa-brands/github';
+import IconInstagram from '~icons/fa-brands/instagram';
+import IconLinkedin from '~icons/fa-brands/linkedin';
+import IconTwitter from '~icons/fa-brands/twitter';
+import IconEnvelope from '~icons/fa-solid/envelope';
+import IconFilePdf from '~icons/fa-solid/file-pdf';
+
+const s = site.socials;
+const emails = ['maskawatalsium@bit.edu.cn', 'maskawatalsium@gmail.com'];
+
+const links = [
+  s.linkedin_username && {
+    label: 'LinkedIn',
+    text: `linkedin.com/in/${s.linkedin_username}`,
+    href: `https://www.linkedin.com/in/${s.linkedin_username}`,
+    Icon: IconLinkedin,
+  },
+  s.github_username && {
+    label: 'GitHub',
+    text: `github.com/${s.github_username}`,
+    href: `https://github.com/${s.github_username}`,
+    Icon: IconGithub,
+  },
+  s.instagram_username && {
+    label: 'Instagram',
+    text: `@${s.instagram_username}`,
+    href: `https://www.instagram.com/${s.instagram_username}`,
+    Icon: IconInstagram,
+  },
+  s.x_username && {
+    label: 'X',
+    text: `@${s.x_username}`,
+    href: `https://x.com/${s.x_username}`,
+    Icon: IconTwitter,
+  },
+  s.facebook_username && {
+    label: 'Facebook',
+    text: `facebook.com/${s.facebook_username}`,
+    href: `https://www.facebook.com/${s.facebook_username}`,
+    Icon: IconFacebook,
+  },
+].filter(Boolean) as { label: string; text: string; href: string; Icon: typeof IconGithub }[];
+---
+
+<Page title="Contact" description={`Contact ${site.author.name}`}>
+  <div class="post">
+    <SectionHead
+      num="06"
+      name="Contact"
+      title="Get in touch"
+      sub="For questions about my research, collaboration, or a copy of my thesis, email is the best way to reach me."
+    />
+
+    <dl class="contact-list">
+      {
+        emails.map((e, i) => (
+          <div class="row-item">
+            <dt class="mono">{i === 0 ? 'Email' : 'Email (personal)'}</dt>
+            <dd>
+              <IconEnvelope class="c-icon" aria-hidden="true" />
+              <a href={`mailto:${e}`}>{e}</a>
+              <button type="button" class="copy-btn mono" data-copy={e}>
+                Copy
+              </button>
+            </dd>
+          </div>
+        ))
+      }
+      {
+        links.map((l) => (
+          <div class="row-item">
+            <dt class="mono">{l.label}</dt>
+            <dd>
+              <l.Icon class="c-icon" aria-hidden="true" />
+              <a href={l.href} target="_blank" rel="noopener noreferrer">
+                {l.text} <span aria-hidden="true">↗</span>
+              </a>
+            </dd>
+          </div>
+        ))
+      }
+      <div class="row-item">
+        <dt class="mono">CV</dt>
+        <dd>
+          <IconFilePdf class="c-icon" aria-hidden="true" />
+          <a href={withBase(site.cv.pdfPath)} target="_blank" rel="noopener noreferrer"
+            >Download CV (PDF)</a
+          >
+        </dd>
+      </div>
+      <div class="row-item">
+        <dt class="mono">Location</dt>
+        <dd>School of Aerospace Engineering, Beijing Institute of Technology · Beijing, China</dd>
+      </div>
+    </dl>
+  </div>
+</Page>
+
+<script>
+  function initCopy() {
+    document.querySelectorAll<HTMLButtonElement>('.copy-btn').forEach((btn) => {
+      if (btn.dataset.ready) return;
+      btn.dataset.ready = '1';
+      btn.addEventListener('click', async () => {
+        const text = btn.dataset.copy ?? '';
+        try {
+          await navigator.clipboard.writeText(text);
+          btn.textContent = 'Copied';
+        } catch {
+          btn.textContent = 'Copy failed';
+        }
+        setTimeout(() => (btn.textContent = 'Copy'), 1600);
+      });
+    });
+  }
+  document.addEventListener('astro:page-load', initCopy);
+</script>
+
+<style>
+  .post {
+    padding-top: 0;
+  }
+
+  .mono {
+    font-family: var(--font-mono);
+  }
+
+  .contact-list {
+    margin: 0.5rem 0 0;
+    border-top: 1px solid var(--global-divider-color);
+  }
+
+  .row-item {
+    display: grid;
+    grid-template-columns: 10rem minmax(0, 1fr);
+    gap: 1rem;
+    align-items: center;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--global-divider-color);
+  }
+
+  dt {
+    margin: 0;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--global-text-color-light);
+  }
+
+  dd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+    font-size: 0.98rem;
+    color: var(--global-text-color);
+  }
+
+  dd a {
+    color: var(--global-theme-color);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  dd a:hover {
+    text-decoration: underline;
+  }
+
+  .c-icon {
+    width: 1rem;
+    height: 1rem;
+    flex: 0 0 auto;
+    color: var(--global-text-color-light);
+  }
+
+  .copy-btn {
+    font-size: 0.72rem;
+    padding: 0.15rem 0.55rem;
+    border: 1px solid var(--global-divider-color);
+    border-radius: 3px;
+    background: none;
+    color: var(--global-text-color);
+    cursor: pointer;
+  }
+
+  .copy-btn:hover {
+    border-color: var(--global-theme-color);
+    color: var(--global-theme-color);
+  }
+
+  @media (max-width: 640px) {
+    .row-item {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.3rem;
+    }
+  }
+</style>

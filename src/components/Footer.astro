@@ -1,6 +1,8 @@
 ---
 import { site } from '@config/site';
 
+import SocialLinks from './SocialLinks.astro';
+
 const year = new Date().getFullYear();
 const lastUpdated = new Date().toLocaleDateString('en-US', {
   year: 'numeric',
@@ -19,6 +21,7 @@ const footerStyle = [
 
 <footer style={footerStyle}>
   <div class="page-container text-center text-sm">
+    <SocialLinks class="footer-social justify-center" size={17} />
     <p>
       &copy; {year}
       {site.author.name}.
@@ -43,6 +46,11 @@ const footerStyle = [
 <style>
   footer a {
     color: var(--global-footer-link-color);
+  }
+
+  footer :global(.footer-social) {
+    gap: 1.4rem;
+    margin-bottom: 0.45rem;
   }
 
   footer a:hover {

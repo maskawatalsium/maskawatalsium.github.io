@@ -1,0 +1,183 @@
+---
+import SectionHead from '@components/SectionHead.astro';
+import { site } from '@config/site';
+import Page from '@layouts/Page.astro';
+import { withBase } from '@utils/base';
+import type { RenderCV, RenderCVEntry } from '@utils/cv';
+import { formatDateRange } from '@utils/cv';
+import yaml from 'js-yaml';
+
+import cvRaw from '../data/cv.yml?raw';
+
+const cv = (yaml.load(cvRaw) as RenderCV).cv;
+const education = (cv.sections.education ?? []) as RenderCVEntry[];
+const experience = (cv.sections.experience ?? []) as RenderCVEntry[];
+
+const range = (e: RenderCVEntry) =>
+  e.start_date ? formatDateRange(e.start_date, e.end_date) : String(e.date ?? '');
+---
+
+<Page title="Education" description={`Education and experience of ${site.author.name}`}>
+  <div class="post">
+    <SectionHead
+      num="04"
+      name="Education"
+      title="Degrees and experience"
+      sub="Mechanical engineering at NCEPU, now aerospace engineering at BIT."
+    />
+
+    <ol class="timeline">
+      {
+        education.map((e) => (
+          <li class="tl-item">
+            <span class="tl-date mono">{range(e)}</span>
+            <div class="tl-body">
+              <h2 class="tl-title">
+                {e.degree} in {e.area}
+              </h2>
+              <p class="tl-org">
+                {e.institution}
+                {e.location && <span class="tl-loc"> · {e.location}</span>}
+              </p>
+              {e.highlights && (
+                <ul class="tl-points">
+                  {e.highlights.map((h) => (
+                    <li>{h}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+
+    <h2 class="sub-head"><span class="mono sub-k">Experience</span></h2>
+    <ol class="timeline">
+      {
+        experience.map((e) => (
+          <li class="tl-item">
+            <span class="tl-date mono">{range(e)}</span>
+            <div class="tl-body">
+              <h3 class="tl-title">{e.position}</h3>
+              <p class="tl-org">
+                {e.company}
+                {e.location && <span class="tl-loc"> · {e.location}</span>}
+              </p>
+              {e.highlights && (
+                <ul class="tl-points">
+                  {e.highlights.map((h) => (
+                    <li>{h}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+
+    <p class="cv-links">
+      <a href={withBase(site.cv.pdfPath)} target="_blank" rel="noopener noreferrer"
+        >Download CV (PDF) &rarr;</a
+      >
+      <a href={withBase('/cv/')}>Full CV page &rarr;</a>
+    </p>
+  </div>
+</Page>
+
+<style>
+  .post {
+    padding-top: 0;
+  }
+
+  .mono {
+    font-family: var(--font-mono);
+  }
+
+  .timeline {
+    list-style: none;
+    margin: 0 0 2.5rem;
+    padding: 0;
+    border-top: 1px solid var(--global-divider-color);
+  }
+
+  .tl-item {
+    display: grid;
+    grid-template-columns: 11rem minmax(0, 1fr);
+    gap: 1.25rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--global-divider-color);
+  }
+
+  .tl-date {
+    font-size: 0.8rem;
+    color: var(--global-theme-color);
+    padding-top: 0.2rem;
+  }
+
+  .tl-title {
+    margin: 0 0 0.2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--global-text-color);
+  }
+
+  .tl-org {
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--global-text-color);
+  }
+
+  .tl-loc {
+    color: var(--global-text-color-light);
+  }
+
+  .tl-points {
+    margin: 0.5rem 0 0;
+    padding-left: 1.1rem;
+    list-style: disc;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--global-text-color-light);
+  }
+
+  .tl-points li {
+    margin: 0.15rem 0;
+  }
+
+  .sub-head {
+    margin: 0 0 0.75rem;
+  }
+
+  .sub-k {
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--global-theme-color);
+  }
+
+  .cv-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  .cv-links a {
+    color: var(--global-theme-color);
+    text-decoration: none;
+  }
+
+  .cv-links a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 640px) {
+    .tl-item {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.3rem;
+    }
+  }
+</style>

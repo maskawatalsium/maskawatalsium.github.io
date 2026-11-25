@@ -16,7 +16,6 @@ import { spawnSync } from 'node:child_process';
 
 import { site } from '@config/site';
 import type { APIContext } from 'astro';
-import { getCollection } from 'astro:content';
 
 const siteUrl = site.url.replace(/\/$/, '');
 const base = (site.base ?? '').replace(/\/$/, '');
@@ -63,8 +62,6 @@ function urlEntry({ url, lastmod, changefreq, priority }: UrlEntry): string {
 }
 
 export async function GET(_ctx: APIContext): Promise<Response> {
-  const projects = await getCollection('projects', (p) => !p.data.redirect);
-
   const today = new Date().toISOString().split('T')[0];
 
   // Static pages: git date of their source file.
@@ -84,8 +81,8 @@ export async function GET(_ctx: APIContext): Promise<Response> {
       priority: 0.9,
     },
     {
-      url: loc('/publications/'),
-      lastmod: gitLastmod('src/pages/publications/index.astro'),
+      url: loc('/education/'),
+      lastmod: gitLastmod('src/pages/education.astro'),
       changefreq: 'monthly',
       priority: 0.8,
     },
@@ -96,22 +93,26 @@ export async function GET(_ctx: APIContext): Promise<Response> {
       priority: 0.8,
     },
     {
-      url: loc('/cv/'),
-      lastmod: gitLastmod('src/pages/cv.astro'),
+      url: loc('/skills/'),
+      lastmod: gitLastmod('src/pages/skills.astro'),
       changefreq: 'monthly',
       priority: 0.7,
     },
+    {
+      url: loc('/contact/'),
+      lastmod: gitLastmod('src/pages/contact.astro'),
+      changefreq: 'yearly',
+      priority: 0.6,
+    },
+    {
+      url: loc('/cv/'),
+      lastmod: gitLastmod('src/pages/cv.astro'),
+      changefreq: 'monthly',
+      priority: 0.5,
+    },
   ];
 
-  const projectUrls: UrlEntry[] = projects.map((p) => ({
-    url: loc(`/projects/${p.id}/`),
-    // Only emit lastmod when git can provide a real date; omit otherwise
-    lastmod: p.filePath ? gitLastmod(p.filePath) : undefined,
-    changefreq: 'monthly',
-    priority: 0.7,
-  }));
-
-  const allUrls = [...staticUrls, ...projectUrls];
+  const allUrls = staticUrls;
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

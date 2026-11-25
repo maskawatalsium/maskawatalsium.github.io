@@ -7,6 +7,7 @@ import IconGoogleScholar from '~icons/academicons/google-scholar';
 import IconInspire from '~icons/academicons/inspire';
 import IconOrcid from '~icons/academicons/orcid';
 import IconResearchgate from '~icons/academicons/researchgate';
+import IconFacebook from '~icons/fa-brands/facebook';
 import IconGithub from '~icons/fa-brands/github';
 import IconGitlab from '~icons/fa-brands/gitlab';
 import IconInstagram from '~icons/fa-brands/instagram';
@@ -115,6 +116,13 @@ if (s.instagram_username) {
     href: `https://www.instagram.com/${s.instagram_username}`,
     label: 'Instagram',
     Icon: IconInstagram,
+  });
+}
+if (s.facebook_username) {
+  links.push({
+    href: `https://www.facebook.com/${s.facebook_username}`,
+    label: 'Facebook',
+    Icon: IconFacebook,
   });
 }
 if (s.mastodon_url) {

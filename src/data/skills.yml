@@ -1,0 +1,38 @@
+# Skill groups shown on the Skills page. Items that also appear in a research or
+# project entry's `tools` list are marked "used in my work" automatically.
+
+- group: Simulation & analysis
+  items:
+    - COMSOL Multiphysics
+    - MATLAB
+    - OpenVSP
+    - 0-D plasma/thermal modelling
+
+- group: CAD & drawings
+  items:
+    - SolidWorks
+    - AutoCAD
+    - Autodesk Inventor
+    - Autodesk Fusion 360
+
+- group: Laboratory
+  items:
+    - Vacuum testing
+    - Type-C thermocouple instrumentation
+    - CNC and EDM machining
+    - ExB probe diagnostics
+
+- group: Programming & documentation
+  items:
+    - Python (basic)
+    - Arduino (C)
+    - MySQL / SQL
+    - LaTeX
+    - Microsoft Office
+
+- group: Languages
+  items:
+    - Bengali — native
+    - English — fluent
+    - Chinese — HSK 3
+    - Hindi — spoken

@@ -1,0 +1,217 @@
+---
+import SectionHead from '@components/SectionHead.astro';
+import { site } from '@config/site';
+import Page from '@layouts/Page.astro';
+import type { RenderCV, RenderCVEntry } from '@utils/cv';
+import { getCollection } from 'astro:content';
+import yaml from 'js-yaml';
+
+import cvRaw from '../data/cv.yml?raw';
+import skillsRaw from '../data/skills.yml?raw';
+
+type Group = { group: string; items: string[] };
+const groups = (yaml.load(skillsRaw) as Group[]).sort((a, b) => b.items.length - a.items.length);
+
+// Tools named in research/project entries — matching skills get a "used" marker.
+const used = new Set(
+  (await getCollection('projects')).flatMap((p) => p.data.tools ?? []).map((t) => t.toLowerCase()),
+);
+const isUsed = (item: string) => {
+  const s = item.toLowerCase();
+  return [...used].some((t) => s.includes(t) || t.includes(s));
+};
+
+// Newest first; undated awards last.
+const firstYear = (a: RenderCVEntry) => Number(String(a.date ?? '').match(/\d{4}/)?.[0] ?? 0);
+const awards = (((yaml.load(cvRaw) as RenderCV).cv.sections.awards ?? []) as RenderCVEntry[]).sort(
+  (a, b) => firstYear(b) - firstYear(a),
+);
+---
+
+<Page title="Skills" description={`Skills and achievements of ${site.author.name}`}>
+  <div class="post">
+    <SectionHead
+      num="05"
+      name="Skills"
+      title="Simulation, design and lab tools"
+      sub="Marked items are used in the research and projects on this site."
+    />
+
+    <div class="tool-grid">
+      {
+        groups.map((g) => (
+          <section class="tool-card">
+            <div class="tool-head">
+              <h2 class="mono panel-label">{g.group}</h2>
+              <span class="mono tool-n" aria-hidden="true">
+                {String(g.items.length).padStart(2, '0')}
+              </span>
+            </div>
+            <ul>
+              {g.items.map((item) => (
+                <li class:list={{ used: isUsed(item) }}>
+                  {item}
+                  {isUsed(item) && <span class="visually-hidden"> — used in my work</span>}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      }
+    </div>
+
+    <h2 class="sub-head"><span class="mono sub-k">Honours &amp; awards</span></h2>
+    <ol class="awards">
+      {
+        awards.map((a) => (
+          <li class="award">
+            <span class="mono award-year">{a.date ?? ''}</span>
+            <div>
+              <p class="award-name">{a.name}</p>
+              {a.issuer && <p class="award-issuer">{a.issuer}</p>}
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</Page>
+
+<style>
+  .post {
+    padding-top: 0;
+  }
+
+  .mono {
+    font-family: var(--font-mono);
+  }
+
+  .tool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 1rem;
+    align-items: start;
+    margin: 0 0 2.5rem;
+  }
+
+  .tool-card {
+    padding: 1.1rem 1.25rem 0.9rem;
+    border: 1px solid var(--global-divider-color);
+    border-radius: 4px;
+    background: var(--global-card-bg-color);
+  }
+
+  .tool-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.6rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--global-divider-color);
+  }
+
+  .panel-label {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--global-text-color);
+  }
+
+  .tool-n {
+    font-size: 0.75rem;
+    color: var(--global-theme-color);
+  }
+
+  .tool-card ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .tool-card li {
+    position: relative;
+    padding: 0.25rem 0 0.25rem 1rem;
+    font-size: 0.92rem;
+    color: var(--global-text-color);
+  }
+
+  .tool-card li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.75em;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    border: 1px solid var(--global-text-color-light);
+  }
+
+  .tool-card li.used::before {
+    background: var(--global-theme-color);
+    border-color: var(--global-theme-color);
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .sub-head {
+    margin: 0 0 0.75rem;
+  }
+
+  .sub-k {
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--global-theme-color);
+  }
+
+  .awards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--global-divider-color);
+  }
+
+  .award {
+    display: grid;
+    grid-template-columns: 7rem minmax(0, 1fr);
+    gap: 1rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--global-divider-color);
+  }
+
+  .award p {
+    margin: 0;
+  }
+
+  .award-year {
+    font-size: 0.82rem;
+    color: var(--global-theme-color);
+    padding-top: 0.1rem;
+  }
+
+  .award-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .award-issuer {
+    font-size: 0.85rem;
+    color: var(--global-text-color-light);
+  }
+
+  @media (max-width: 640px) {
+    .award {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.2rem;
+    }
+  }
+</style>

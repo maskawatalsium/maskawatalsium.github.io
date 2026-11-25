@@ -1,70 +1,102 @@
 ---
+import SectionHead from '@components/SectionHead.astro';
+import Study from '@components/Study.astro';
 import { site } from '@config/site';
 import Page from '@layouts/Page.astro';
-import { withBase } from '@utils/base';
+import { getAuthors, getTitle, getVenue, getYear, parseBibtex } from '@utils/bibtex';
 import { getCollection } from 'astro:content';
+
+import bibRaw from '../../data/papers.bib?raw';
 
 const entries = (await getCollection('projects', (p) => p.data.category === 'research')).sort(
   (a, b) => (a.data.importance ?? 999) - (b.data.importance ?? 999),
 );
+
+const selfName = site.publications.authorLastName ?? '';
+const papers = parseBibtex(bibRaw).map((e) => {
+  const authors = getAuthors(e)
+    .split(', ')
+    .map((a) => ({ name: a, self: selfName !== '' && a.endsWith(selfName) }));
+  const f = e.fields;
+  const volume = [f.volume, f.number ? `(${f.number})` : ''].join('');
+  return {
+    key: e.key,
+    title: getTitle(e),
+    authors,
+    venue: getVenue(e),
+    year: getYear(e),
+    details: [volume, f.pages].filter(Boolean).join(', '),
+    doi: f.doi,
+    abbr: f.abbr,
+  };
+});
 ---
 
 <Page title="Research" description={`Research by ${site.author.name}`}>
   <div class="post">
-    <header class="post-header">
-      <h1 class="post-title">research</h1>
-      <p class="post-description">{site.pages.research.description}</p>
-    </header>
+    <SectionHead
+      num="02"
+      name="Research"
+      title="Plasma sources and diagnostics for electric propulsion"
+      sub={site.pages.research.description}
+    />
 
-    <article>
-      {
-        entries.length === 0 ? (
-          <p style="color: var(--global-text-color-light);">No research entries yet.</p>
-        ) : (
-          <ol class="research-list">
-            {entries.map((entry, i) => {
-              const href = withBase(`/projects/${entry.id}/`);
-              const { title, description, img, img_alt, period, affiliation, methods, status } =
-                entry.data;
-              return (
-                <li class="research-item">
-                  {img && (
-                    <a href={href} class="research-thumb" tabindex="-1" aria-hidden="true">
-                      <img src={withBase(img)} alt={img_alt ?? title} loading="lazy" />
+    {
+      entries.map((entry, i) => (
+        <Study entry={entry} code={`R/${String(i + 1).padStart(2, '0')}`} />
+      ))
+    }
+
+    <section id="publications" class="pubs">
+      <p class="mono pubs-kicker">Earlier work</p>
+      <h2 class="pubs-title">Publications</h2>
+      <p class="pubs-sub">Journal papers from my undergraduate studies.</p>
+      <ol class="pub-list">
+        {
+          papers.map((p) => (
+            <li class="pub">
+              <span class="mono pub-year">{p.year}</span>
+              <div class="pub-body">
+                <p class="pub-title">
+                  {p.doi ? (
+                    <a href={`https://doi.org/${p.doi}`} target="_blank" rel="noopener noreferrer">
+                      {p.title}
                     </a>
+                  ) : (
+                    p.title
                   )}
-                  <div class="research-body">
-                    <p class="research-code">R/{String(i + 1).padStart(2, '0')}</p>
-                    <h2 class="research-title">
-                      <a href={href}>{title}</a>
-                    </h2>
-                    {(period || affiliation) && (
-                      <p class="research-where">
-                        {affiliation}
-                        {affiliation && period ? ' · ' : ''}
-                        {period}
-                      </p>
-                    )}
-                    {description && <p class="research-desc">{description}</p>}
-                    {methods && methods.length > 0 && (
-                      <p class="research-methods">
-                        {methods.map((m) => (
-                          <span class="meta-tag">{m}</span>
-                        ))}
-                      </p>
-                    )}
-                    {status && <p class="research-status">{status}</p>}
-                    <a href={href} class="research-more">
-                      Read more &rarr;
-                    </a>
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-        )
-      }
-    </article>
+                </p>
+                <p class="pub-authors">
+                  {p.authors.map((a, k) => (
+                    <>
+                      {a.self ? <strong>{a.name}</strong> : a.name}
+                      {k < p.authors.length - 1 ? ', ' : ''}
+                    </>
+                  ))}
+                </p>
+                <p class="pub-venue">
+                  <em>{p.venue}</em>
+                  {p.details && `, ${p.details}`}
+                  {p.doi && (
+                    <>
+                      {' · '}
+                      <a
+                        class="mono pub-doi"
+                        href={`https://doi.org/${p.doi}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        doi:{p.doi}
+                      </a>
+                    </>
+                  )}
+                </p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
   </div>
 </Page>
 
@@ -73,112 +105,94 @@ const entries = (await getCollection('projects', (p) => p.data.category === 'res
     padding-top: 0;
   }
 
-  .post-description {
+  .mono {
+    font-family: var(--font-mono);
+  }
+
+  .pubs {
+    padding: 2.75rem 0 1rem;
+    border-top: 1px solid var(--global-divider-color);
+    scroll-margin-top: 4.5rem;
+  }
+
+  .pubs-kicker {
+    margin: 0 0 0.4rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--global-theme-color);
+  }
+
+  .pubs-title {
+    margin: 0 0 0.4rem;
+    font-size: 1.45rem;
+    font-weight: 600;
+  }
+
+  .pubs-sub {
+    margin: 0 0 1.25rem;
     color: var(--global-text-color-light);
-    font-size: 1rem;
-    margin: 0;
   }
 
-  .research-list {
+  .pub-list {
     list-style: none;
-    margin: 1.5rem 0 0;
+    margin: 0;
     padding: 0;
-  }
-
-  .research-item {
-    display: grid;
-    grid-template-columns: 240px 1fr;
-    gap: 1.5rem;
-    padding: 1.5rem 0;
     border-top: 1px solid var(--global-divider-color);
   }
 
-  .research-item:last-child {
+  .pub {
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    gap: 1rem;
+    padding: 1rem 0;
     border-bottom: 1px solid var(--global-divider-color);
   }
 
-  .research-thumb img {
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-    border-radius: 3px;
-    border: 1px solid var(--global-divider-color);
-    display: block;
+  .pub-year {
+    font-size: 0.85rem;
+    color: var(--global-theme-color);
+    padding-top: 0.1rem;
   }
 
-  .research-body > * {
-    margin: 0;
+  .pub-body p {
+    margin: 0 0 0.2rem;
   }
 
-  .research-code {
-    font-family: var(--font-mono, monospace);
-    font-size: 0.75rem;
-    color: var(--global-text-color-light);
-    letter-spacing: 0.05em;
-  }
-
-  .research-title {
-    font-size: 1.2rem;
+  .pub-title {
     font-weight: 600;
-    margin-top: 0.2rem;
-    line-height: 1.35;
+    line-height: 1.45;
   }
 
-  .research-title a {
+  .pub-title a {
     color: var(--global-text-color);
     text-decoration: none;
   }
 
-  .research-title a:hover {
+  .pub-title a:hover {
     color: var(--global-theme-color);
   }
 
-  .research-where {
-    font-size: 0.85rem;
+  .pub-authors,
+  .pub-venue {
+    font-size: 0.88rem;
     color: var(--global-text-color-light);
-    margin-top: 0.25rem;
   }
 
-  .research-desc {
-    font-size: 0.95rem;
-    margin-top: 0.6rem;
+  .pub-authors strong {
     color: var(--global-text-color);
   }
 
-  .research-methods {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    margin-top: 0.7rem;
-  }
-
-  .meta-tag {
-    font-size: 0.75rem;
-    padding: 0.05rem 0.5rem;
-    border: 1px solid var(--global-divider-color);
-    border-radius: 3px;
-    color: var(--global-text-color);
-  }
-
-  .research-status {
+  .pub-doi {
     font-size: 0.8rem;
-    font-style: italic;
-    color: var(--global-text-color-light);
-    margin-top: 0.6rem;
-  }
-
-  .research-more {
-    display: inline-block;
-    margin-top: 0.7rem;
-    font-size: 0.85rem;
     color: var(--global-theme-color);
     text-decoration: none;
   }
 
   @media (max-width: 640px) {
-    .research-item {
-      grid-template-columns: 1fr;
-      gap: 0.9rem;
+    .pub {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.25rem;
     }
   }
 </style>

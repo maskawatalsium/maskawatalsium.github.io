@@ -1,0 +1,253 @@
+---
+/**
+ * One research study or project, rendered inline:
+ * code rail · kicker · title · summary · status · spec table · text · links · gallery.
+ */
+import { withBase } from '@utils/base';
+import type { CollectionEntry } from 'astro:content';
+import { render } from 'astro:content';
+
+import Gallery from './Gallery.astro';
+
+interface Props {
+  entry: CollectionEntry<'projects'>;
+  /** Rail code, e.g. "R/01" or "P/03". */
+  code: string;
+}
+
+const { entry, code } = Astro.props;
+const { Content } = await render(entry);
+const { title, description, affiliation, period, role, methods, tools, status, figures, links } =
+  entry.data;
+
+const kicker = [affiliation, period].filter(Boolean).join(' · ');
+const specs = [
+  { k: 'Role', v: role },
+  { k: 'Methods', v: methods?.join(' · ') },
+  { k: 'Software', v: tools?.join(' · ') },
+].filter((s) => s.v);
+const label = code.replace('/', '').replace(/^([A-Z])0*/, '$1');
+const resolve = (href: string) => (href.startsWith('/') ? withBase(href) : href);
+---
+
+<article class="study" id={entry.id}>
+  <div class="study-rail" aria-hidden="true">
+    <span class="mono rail-code">{code}</span>
+    <span class="rail-line"></span>
+  </div>
+
+  <div class="study-main">
+    {kicker && <p class="mono study-kicker">{kicker}</p>}
+    <h3 class="study-title">{title}</h3>
+    {description && <p class="study-sub">{description}</p>}
+
+    {
+      status && (
+        <p class="study-status">
+          <span class="status-mark" aria-hidden="true">
+            ◆
+          </span>
+          {status}
+        </p>
+      )
+    }
+
+    {
+      specs.length > 0 && (
+        <dl class="spec-table">
+          {specs.map((s) => (
+            <div>
+              <dt class="mono">{s.k}</dt>
+              <dd>{s.v}</dd>
+            </div>
+          ))}
+        </dl>
+      )
+    }
+
+    <div class="prose study-body">
+      <Content />
+    </div>
+
+    {
+      links && links.length > 0 && (
+        <p class="out-links">
+          {links.map((l) => (
+            <a
+              href={resolve(l.href)}
+              target={l.href.startsWith('http') ? '_blank' : undefined}
+              rel={l.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+            >
+              {l.label} &rarr;
+            </a>
+          ))}
+        </p>
+      )
+    }
+
+    {figures && figures.length > 0 && <Gallery figures={figures} label={label} />}
+  </div>
+</article>
+
+<style>
+  .study {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1fr);
+    padding: 2.75rem 0;
+    border-top: 1px solid var(--global-divider-color);
+    scroll-margin-top: 4.5rem;
+  }
+
+  .study-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    position: sticky;
+    top: 5rem;
+    align-self: start;
+    height: 100%;
+    max-height: 14rem;
+  }
+
+  .rail-code {
+    font-size: 0.8rem;
+    color: var(--global-theme-color);
+    letter-spacing: 0.04em;
+  }
+
+  .rail-line {
+    width: 1px;
+    flex: 1;
+    min-height: 3rem;
+    background: var(--global-divider-color);
+  }
+
+  .mono {
+    font-family: var(--font-mono);
+  }
+
+  .study-kicker {
+    margin: 0 0 0.5rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+    color: var(--global-text-color-light);
+  }
+
+  .study-title {
+    margin: 0 0 0.6rem;
+    font-size: 1.45rem;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--global-text-color);
+  }
+
+  .study-sub {
+    margin: 0 0 1.1rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--global-text-color-light);
+    max-width: 44em;
+  }
+
+  .study-status {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin: 0 0 1.25rem;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid var(--global-divider-color);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    color: var(--global-text-color);
+  }
+
+  .status-mark {
+    color: var(--global-theme-color);
+    font-size: 0.7rem;
+  }
+
+  .spec-table {
+    margin: 0 0 1.4rem;
+    border-top: 1px solid var(--global-divider-color);
+  }
+
+  .spec-table > div {
+    display: grid;
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+    gap: 1rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--global-divider-color);
+  }
+
+  .spec-table dt {
+    margin: 0;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--global-text-color-light);
+    padding-top: 0.15rem;
+  }
+
+  .spec-table dd {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: var(--global-text-color);
+  }
+
+  .study-body {
+    max-width: 46em;
+    font-size: 0.98rem;
+    line-height: 1.7;
+  }
+
+  .study-body :global(p:last-child),
+  .study-body :global(ul:last-child) {
+    margin-bottom: 0;
+  }
+
+  .out-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    margin: 1rem 0 0;
+    font-size: 0.9rem;
+  }
+
+  .out-links a {
+    color: var(--global-theme-color);
+    text-decoration: none;
+  }
+
+  .out-links a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 640px) {
+    .study {
+      grid-template-columns: minmax(0, 1fr);
+      padding: 2rem 0;
+    }
+
+    .study-rail {
+      position: static;
+      flex-direction: row;
+      align-items: center;
+      max-height: none;
+      margin-bottom: 0.75rem;
+    }
+
+    .rail-line {
+      height: 1px;
+      width: 3rem;
+      min-height: 0;
+      flex: 0 0 3rem;
+    }
+
+    .spec-table > div {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.15rem;
+    }
+  }
+</style>

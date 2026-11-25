@@ -75,12 +75,12 @@ export const site = {
   // Supported platforms (set to undefined to hide):
   //   email, x_username, linkedin_username, github_username, gitlab_username,
   //   scholar_userid, orcid_id, inspire_id, researchgate_username,
-  //   arxiv_id, youtube_id, instagram_username, mastodon_url,
+  //   arxiv_id, youtube_id, instagram_username, facebook_username, mastodon_url,
   //   bluesky_handle, medium_username, cv_pdf, rss_icon
 
   socials: {
     email: 'maskawatalsium@bit.edu.cn',
-    x_username: undefined as string | undefined,
+    x_username: 'maskawatt' as string | undefined,
     linkedin_username: 'maskawat-al-sium' as string | undefined,
     github_username: 'Maskawatprime1' as string | undefined,
     gitlab_username: undefined as string | undefined,
@@ -92,7 +92,9 @@ export const site = {
     researchgate_username: undefined as string | undefined,
     arxiv_id: undefined as string | undefined,
     youtube_id: undefined as string | undefined,
-    instagram_username: undefined as string | undefined,
+    instagram_username: 'maskawat_prime' as string | undefined,
+    /** Facebook username — the part after facebook.com/ */
+    facebook_username: 'maskawatprime' as string | undefined,
     mastodon_url: undefined as string | undefined,
     bluesky_handle: undefined as string | undefined,
     medium_username: undefined as string | undefined,
@@ -117,12 +119,15 @@ export const site = {
      * `href` values are relative to the site root (base is prepended automatically).
      */
     items: [
-      { label: 'about', href: '/' },
-      { label: 'research', href: '/research/' },
-      { label: 'projects', href: '/projects/' },
-      { label: 'publications', href: '/publications/' },
-      { label: 'cv', href: '/cv/' },
+      { label: 'Profile', href: '/' },
+      { label: 'Research', href: '/research/' },
+      { label: 'Projects', href: '/projects/' },
+      { label: 'Education', href: '/education/' },
+      { label: 'Skills', href: '/skills/' },
+      { label: 'Contact', href: '/contact/' },
     ] as NavItem[],
+    /** Prefix each top-level item with its position ("01", "02", …). */
+    numbered: true,
   },
 
   // ─── Footer ────────────────────────────────────────────────────────────────

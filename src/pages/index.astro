@@ -152,8 +152,11 @@ const renderedAnnouncements = await Promise.all(
         site.selectedPapers.enabled && selectedPapers.length > 0 && (
           <section class="mt-8">
             <h2 style="color: var(--global-text-color); border-bottom: 1px solid var(--global-divider-color); padding-bottom: 0.3rem;">
-              <a href={`${site.base}/publications/`} style="color: inherit; text-decoration: none;">
-                selected publications
+              <a
+                href={`${site.base}/research/#publications`}
+                style="color: inherit; text-decoration: none;"
+              >
+                earlier work
               </a>
             </h2>
             <ol class="m-0 list-none p-0">
@@ -205,10 +208,10 @@ const renderedAnnouncements = await Promise.all(
             </ol>
             <p class="mt-2 text-sm">
               <a
-                href={`${site.base}/publications/`}
+                href={`${site.base}/research/#publications`}
                 style="color: var(--global-theme-color); text-decoration: none;"
               >
-                Full publication list &rarr;
+                Publications on the research page &rarr;
               </a>
             </p>
           </section>

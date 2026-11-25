@@ -103,10 +103,26 @@ const projects = defineCollection({
     affiliation: z.string().optional(),
     /** The author's own role in the work. */
     role: z.string().optional(),
-    /** Methods and tools, shown as tags. */
+    /** Methods, shown in the spec table. */
     methods: z.array(z.string()).optional(),
+    /** Software and tools, shown in the spec table. */
+    tools: z.array(z.string()).optional(),
     /** Publication / disclosure status line, e.g. 'Ongoing — results not yet published'. */
     status: z.string().optional(),
+    /** Figures and videos for the entry's gallery (first one is shown large). */
+    figures: z
+      .array(
+        z.object({
+          src: z.string(),
+          type: z.enum(['image', 'video']).optional().default('image'),
+          poster: z.string().optional(),
+          caption: z.string(),
+          alt: z.string().optional(),
+        }),
+      )
+      .optional(),
+    /** Outbound links shown under the text, e.g. a paper or poster. */
+    links: z.array(z.object({ label: z.string(), href: z.string() })).optional(),
     /** Show redirect to external url instead of project page. */
     redirect: z.string().url().optional(),
     /** Citation keys from papers.bib to show as References at the bottom of the project page. */
