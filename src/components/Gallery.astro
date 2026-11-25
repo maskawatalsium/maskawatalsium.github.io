@@ -98,7 +98,13 @@ const items = figures.map((f, i) => ({
               aria-label={`Show figure ${i + 1}: ${f.alt}`}
             >
               {f.thumbUrl ? (
-                <img src={f.thumbUrl} alt="" loading="lazy" decoding="async" />
+                <img
+                  src={f.thumbUrl}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  onerror={`this.onerror=null;this.src='${f.posterUrl ?? f.url}'`}
+                />
               ) : (
                 <span class="thumb-video mono">video</span>
               )}
