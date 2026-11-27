@@ -1,35 +1,283 @@
 ---
 import SectionHead from '@components/SectionHead.astro';
-import Study from '@components/Study.astro';
 import { site } from '@config/site';
 import Page from '@layouts/Page.astro';
+import { withBase } from '@utils/base';
 import { getCollection } from 'astro:content';
 
 // Research entries live on /research/; this page lists the remaining projects.
-const projects = (await getCollection('projects', (p) => p.data.category !== 'research')).sort(
-  (a, b) => (a.data.importance ?? 999) - (b.data.importance ?? 999),
-);
+const projects = (await getCollection('projects', (p) => p.data.category !== 'research'))
+  .sort((a, b) => (a.data.importance ?? 999) - (b.data.importance ?? 999))
+  .map((p) => {
+    const figs = p.data.figures ?? [];
+    const firstImage = figs.find((f) => f.type !== 'video');
+    const firstVideo = figs.find((f) => f.type === 'video');
+    const preview = p.data.img ?? firstVideo?.poster ?? firstImage?.src;
+    const thumb = preview
+      ? withBase(
+          `/assets/img/thumbs/${preview
+            .split('/')
+            .pop()
+            ?.replace(/\.[^.]+$/, '')}.jpg`,
+        )
+      : undefined;
+    return {
+      id: p.id,
+      title: p.data.title,
+      description: p.data.description ?? '',
+      period: p.data.period ?? '',
+      href: withBase(`/projects/${p.id}/`),
+      preview: preview ? withBase(preview) : undefined,
+      thumb,
+    };
+  });
 ---
 
 <Page title="Projects" description={`Projects by ${site.author.name}`}>
   <div class="post">
-    <SectionHead
-      num="03"
-      name="Projects"
-      title="Design, modelling and control projects"
-      sub={site.pages.projects.description}
-    />
+    <SectionHead title="Projects" sub={site.pages.projects.description} />
 
-    {
-      projects.map((entry, i) => (
-        <Study entry={entry} code={`P/${String(i + 1).padStart(2, '0')}`} />
-      ))
-    }
+    <ol class="proj-list">
+      {
+        projects.map((p) => (
+          <li>
+            <a
+              class="proj-row"
+              href={p.href}
+              data-preview={p.preview}
+              data-text={p.preview ? undefined : p.description}
+            >
+              <span class="proj-thumb" aria-hidden="true">
+                {p.thumb ? (
+                  <img src={p.thumb} alt="" loading="lazy" />
+                ) : (
+                  <span class="thumb-blank" />
+                )}
+              </span>
+              <span class="proj-name">{p.title}</span>
+              <span class="proj-year">{p.period}</span>
+              <span class="proj-arrow" aria-hidden="true">
+                &rarr;
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+    <p class="proj-hint">Hover over a project to preview it, or open it for the full story.</p>
+  </div>
+
+  <div class="proj-preview" aria-hidden="true">
+    <img alt="" />
+    <p></p>
   </div>
 </Page>
+
+<script>
+  function initPreview() {
+    const card = document.querySelector<HTMLDivElement>('.proj-preview');
+    if (!card || card.dataset.ready) return;
+    card.dataset.ready = '1';
+    // Floating previews only for devices that can hover; touch devices get inline thumbnails.
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+    const img = card.querySelector('img') as HTMLImageElement;
+    const text = card.querySelector('p') as HTMLParagraphElement;
+
+    document.querySelectorAll<HTMLAnchorElement>('.proj-row').forEach((row) => {
+      row.addEventListener('mouseenter', () => {
+        const src = row.dataset.preview;
+        if (src) {
+          img.src = src;
+          img.hidden = false;
+          text.hidden = true;
+        } else {
+          img.hidden = true;
+          text.hidden = false;
+          text.textContent = row.dataset.text ?? '';
+        }
+        card.classList.add('show');
+      });
+      row.addEventListener('mouseleave', () => card.classList.remove('show'));
+      row.addEventListener('mousemove', (e) => {
+        const w = card.offsetWidth;
+        const h = card.offsetHeight;
+        let x = e.clientX + 28;
+        let y = e.clientY - h / 2;
+        if (x + w > window.innerWidth - 12) x = e.clientX - w - 28;
+        y = Math.max(70, Math.min(y, window.innerHeight - h - 12));
+        card.style.transform = `translate(${x}px, ${y}px)`;
+      });
+    });
+  }
+
+  document.addEventListener('astro:page-load', initPreview);
+</script>
 
 <style>
   .post {
     padding-top: 0;
+  }
+
+  .proj-list {
+    list-style: none;
+    margin: 1.25rem 0 0;
+    padding: 0;
+    border-top: 1px solid var(--global-divider-color);
+    counter-reset: none;
+  }
+
+  .proj-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: baseline;
+    gap: 1.25rem;
+    padding: 1.35rem 0.25rem;
+    border-bottom: 1px solid var(--global-divider-color);
+    text-decoration: none;
+    color: var(--global-text-color);
+    transition:
+      padding-left 0.25s ease,
+      background-color 0.25s ease;
+  }
+
+  .proj-thumb {
+    display: none;
+  }
+
+  .proj-name {
+    font-size: 1.45rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    background-image: linear-gradient(var(--global-theme-color), var(--global-theme-color));
+    background-size: 0% 2px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition:
+      color 0.2s ease,
+      background-size 0.3s ease;
+  }
+
+  .proj-year {
+    font-size: 0.92rem;
+    color: var(--global-text-color-light);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .proj-arrow {
+    font-size: 1.2rem;
+    color: var(--global-theme-color);
+    opacity: 0;
+    transform: translateX(-6px);
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .proj-row:hover,
+  .proj-row:focus-visible {
+    padding-left: 0.9rem;
+    outline: none;
+  }
+
+  .proj-row:hover .proj-name,
+  .proj-row:focus-visible .proj-name {
+    color: var(--global-theme-color);
+    background-size: 100% 2px;
+  }
+
+  .proj-row:hover .proj-arrow,
+  .proj-row:focus-visible .proj-arrow {
+    opacity: 1;
+    transform: none;
+  }
+
+  .proj-hint {
+    margin: 1rem 0 0;
+    font-size: 0.9rem;
+    color: var(--global-text-color-light);
+  }
+
+  .proj-preview {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 50;
+    width: 340px;
+    padding: 8px;
+    border: 1px solid var(--global-divider-color);
+    border-radius: 8px;
+    background: var(--global-bg-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+  }
+
+  .proj-preview.show {
+    opacity: 1;
+  }
+
+  .proj-preview img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: contain;
+    border-radius: 4px;
+    background: var(--global-card-bg-color);
+  }
+
+  .proj-preview p {
+    margin: 0;
+    padding: 0.6rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--global-text-color);
+  }
+
+  /* Touch devices: no hover, so show a small thumbnail beside each name. */
+  @media (hover: none), (max-width: 640px) {
+    .proj-row {
+      grid-template-columns: 76px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 0.9rem;
+      padding: 1rem 0;
+    }
+
+    .proj-thumb {
+      display: block;
+      width: 76px;
+      aspect-ratio: 4 / 3;
+      border: 1px solid var(--global-divider-color);
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--global-card-bg-color);
+    }
+
+    .proj-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .proj-name {
+      font-size: 1.08rem;
+      color: var(--global-theme-color);
+    }
+
+    .proj-arrow {
+      display: none;
+    }
+
+    .proj-year {
+      font-size: 0.8rem;
+    }
+
+    .proj-hint {
+      display: none;
+    }
   }
 </style>

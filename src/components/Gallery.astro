@@ -1,10 +1,12 @@
 ---
 /**
  * Figure gallery: one large "stage" plus a thumbnail rail.
- * Hovering or focusing a thumbnail swaps the stage; clicking the stage opens a
- * lightbox with the caption. Figures sit on uniform plates and are never cropped
- * (object-fit: contain). Videos play muted on hover and with controls in the lightbox.
+ * Selecting a thumbnail swaps the stage. Images open in a full-screen viewer with
+ * their caption; videos play inline in a Plyr player (controls, fullscreen).
+ * Figures sit on uniform plates and are never cropped (object-fit: contain).
  */
+import 'plyr/dist/plyr.css';
+
 import { withBase } from '@utils/base';
 
 export interface GalleryFigure {
@@ -17,11 +19,9 @@ export interface GalleryFigure {
 
 interface Props {
   figures: GalleryFigure[];
-  /** Short prefix for figure numbers, e.g. "R1" → "Fig. R1.2". */
-  label: string;
 }
 
-const { figures, label } = Astro.props;
+const { figures } = Astro.props;
 
 /** Small pre-generated thumbnail: /assets/img/thumbs/<basename>.jpg */
 const thumbOf = (path: string) =>
@@ -32,57 +32,52 @@ const thumbOf = (path: string) =>
       ?.replace(/\.[^.]+$/, '')}.jpg`,
   );
 
-const items = figures.map((f, i) => ({
-  ...f,
-  type: f.type ?? 'image',
-  url: withBase(f.src),
-  posterUrl: f.poster ? withBase(f.poster) : undefined,
-  thumbUrl:
-    (f.type ?? 'image') === 'video' ? (f.poster ? thumbOf(f.poster) : undefined) : thumbOf(f.src),
-  num: `Fig. ${label}.${i + 1}`,
-  alt: f.alt ?? f.caption,
-}));
+const items = figures.map((f) => {
+  const type = f.type ?? 'image';
+  return {
+    ...f,
+    type,
+    url: withBase(f.src),
+    posterUrl: f.poster ? withBase(f.poster) : undefined,
+    thumbUrl: type === 'video' ? (f.poster ? thumbOf(f.poster) : undefined) : thumbOf(f.src),
+    alt: f.alt ?? f.caption,
+  };
+});
 ---
 
 <div class="gallery" data-gallery>
   <div class="stage">
     {
-      items.map((f, i) => (
-        <button
-          type="button"
-          class:list={['plate', 'stage-item', { active: i === 0 }]}
-          data-index={i}
-          data-type={f.type}
-          data-full={f.url}
-          data-caption={`${f.num} — ${f.caption}`}
-          aria-label={`Enlarge: ${f.alt}`}
-          tabindex={i === 0 ? 0 : -1}
-        >
-          {f.type === 'video' ? (
+      items.map((f, i) =>
+        f.type === 'video' ? (
+          <div class:list={['plate', 'stage-item', 'is-video', { active: i === 0 }]} data-index={i}>
             <video
+              class="js-player"
               src={f.url}
               poster={f.posterUrl}
-              muted
-              loop
               playsinline
               preload="none"
-              aria-hidden="true"
+              aria-label={f.alt}
             />
-          ) : (
+          </div>
+        ) : (
+          <button
+            type="button"
+            class:list={['plate', 'stage-item', { active: i === 0 }]}
+            data-index={i}
+            data-full={f.url}
+            data-caption={f.caption}
+            aria-label={`Enlarge: ${f.alt}`}
+            tabindex={i === 0 ? 0 : -1}
+          >
             <img src={f.url} alt={f.alt} loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
-          )}
-          {f.type === 'video' && (
-            <span class="play-cue mono">▶ hover to play · click to enlarge</span>
-          )}
-          <span class="zoom-hint mono">Expand</span>
-        </button>
-      ))
+            <span class="zoom-hint">Click to enlarge</span>
+          </button>
+        ),
+      )
     }
   </div>
-  <p class="stage-caption">
-    <span class="fig-n mono">{items[0]?.num}</span>
-    <span class="cap-text">{items[0]?.caption}</span>
-  </p>
+  <p class="stage-caption">{items[0]?.caption}</p>
 
   {
     items.length > 1 && (
@@ -93,9 +88,8 @@ const items = figures.map((f, i) => ({
               type="button"
               class:list={['plate', 'thumb', { active: i === 0 }]}
               data-index={i}
-              data-num={f.num}
               data-caption={f.caption}
-              aria-label={`Show figure ${i + 1}: ${f.alt}`}
+              aria-label={`Show: ${f.alt}`}
             >
               {f.thumbUrl ? (
                 <img
@@ -106,11 +100,13 @@ const items = figures.map((f, i) => ({
                   onerror={`this.onerror=null;this.src='${f.posterUrl ?? f.url}'`}
                 />
               ) : (
-                <span class="thumb-video mono">video</span>
+                <span class="thumb-video">Video</span>
               )}
               {f.type === 'video' && (
                 <span class="thumb-play" aria-hidden="true">
-                  ▶
+                  <svg viewBox="0 0 16 16" width="10" height="10">
+                    <path d="M4 2.5v11l9-5.5z" fill="currentColor" />
+                  </svg>
                 </span>
               )}
             </button>
@@ -122,8 +118,11 @@ const items = figures.map((f, i) => ({
 </div>
 
 <script>
-  type Item = { type: string; full: string; caption: string };
+  import Plyr from 'plyr';
 
+  type Item = { full: string; caption: string };
+
+  const players = new WeakMap<HTMLVideoElement, Plyr>();
   let lb: HTMLDivElement | null = null;
   let lbItems: Item[] = [];
   let lbIndex = 0;
@@ -138,24 +137,17 @@ const items = figures.map((f, i) => ({
     lb.setAttribute('aria-label', 'Figure viewer');
     lb.hidden = true;
 
-    const close = document.createElement('button');
-    close.type = 'button';
-    close.className = 'lb-close';
-    close.setAttribute('aria-label', 'Close');
-    close.textContent = '×';
-
-    const prev = document.createElement('button');
-    prev.type = 'button';
-    prev.className = 'lb-nav lb-prev';
-    prev.setAttribute('aria-label', 'Previous figure');
-    prev.textContent = '‹';
-
-    const next = document.createElement('button');
-    next.type = 'button';
-    next.className = 'lb-nav lb-next';
-    next.setAttribute('aria-label', 'Next figure');
-    next.textContent = '›';
-
+    const mk = (cls: string, label: string, text: string) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = cls;
+      b.setAttribute('aria-label', label);
+      b.textContent = text;
+      return b;
+    };
+    const close = mk('lb-close', 'Close', '×');
+    const prev = mk('lb-nav lb-prev', 'Previous figure', '‹');
+    const next = mk('lb-nav lb-next', 'Next figure', '›');
     const media = document.createElement('div');
     media.className = 'lb-media';
     const cap = document.createElement('p');
@@ -184,24 +176,11 @@ const items = figures.map((f, i) => ({
     lbIndex = (i + lbItems.length) % lbItems.length;
     const it = lbItems[lbIndex];
     const media = lb.querySelector('.lb-media') as HTMLDivElement;
-    const cap = lb.querySelector('.lb-caption') as HTMLParagraphElement;
-    media.replaceChildren();
-    if (it.type === 'video') {
-      const v = document.createElement('video');
-      v.src = it.full;
-      v.controls = true;
-      v.autoplay = true;
-      v.muted = true;
-      v.loop = true;
-      v.playsInline = true;
-      media.appendChild(v);
-    } else {
-      const img = document.createElement('img');
-      img.src = it.full;
-      img.alt = it.caption;
-      media.appendChild(img);
-    }
-    cap.textContent = it.caption;
+    const img = document.createElement('img');
+    img.src = it.full;
+    img.alt = it.caption;
+    media.replaceChildren(img);
+    (lb.querySelector('.lb-caption') as HTMLParagraphElement).textContent = it.caption;
     const multi = lbItems.length > 1;
     (lb.querySelector('.lb-prev') as HTMLElement).hidden = !multi;
     (lb.querySelector('.lb-next') as HTMLElement).hidden = !multi;
@@ -228,12 +207,25 @@ const items = figures.map((f, i) => ({
   function initGallery(root: HTMLElement) {
     if (root.dataset.ready) return;
     root.dataset.ready = '1';
-    const stageItems = [...root.querySelectorAll<HTMLButtonElement>('.stage-item')];
+
+    root.querySelectorAll<HTMLVideoElement>('video.js-player').forEach((v) => {
+      players.set(
+        v,
+        new Plyr(v, {
+          controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'fullscreen'],
+          ratio: '16:9',
+          muted: true,
+          loop: { active: true },
+        }),
+      );
+    });
+
+    const stageItems = [...root.querySelectorAll<HTMLElement>('.stage-item')];
     const thumbs = [...root.querySelectorAll<HTMLButtonElement>('.thumb')];
-    const num = root.querySelector('.stage-caption .fig-n') as HTMLElement;
-    const capText = root.querySelector('.stage-caption .cap-text') as HTMLElement;
-    const items: Item[] = stageItems.map((b) => ({
-      type: b.dataset.type ?? 'image',
+    const caption = root.querySelector('.stage-caption') as HTMLElement;
+    // Only images go to the full-screen viewer; videos have their own player.
+    const imageButtons = stageItems.filter((el) => !el.classList.contains('is-video'));
+    const imageItems: Item[] = imageButtons.map((b) => ({
       full: b.dataset.full ?? '',
       caption: b.dataset.caption ?? '',
     }));
@@ -241,51 +233,37 @@ const items = figures.map((f, i) => ({
 
     const activate = (i: number) => {
       if (i === current) return;
-      stageItems[current]?.querySelector('video')?.pause();
-      stageItems.forEach((b, k) => {
-        b.classList.toggle('active', k === i);
-        b.tabIndex = k === i ? 0 : -1;
+      const prevVideo = stageItems[current]?.querySelector('video');
+      if (prevVideo) players.get(prevVideo)?.pause();
+      stageItems.forEach((el, k) => {
+        el.classList.toggle('active', k === i);
+        if (el instanceof HTMLButtonElement) el.tabIndex = k === i ? 0 : -1;
       });
       thumbs.forEach((t, k) => t.classList.toggle('active', k === i));
-      const t = thumbs[i];
-      if (t) {
-        num.textContent = t.dataset.num ?? '';
-        capText.textContent = t.dataset.caption ?? '';
-      }
+      caption.textContent = thumbs[i]?.dataset.caption ?? '';
       current = i;
     };
 
     thumbs.forEach((t, i) => {
       t.addEventListener('mouseenter', () => activate(i));
       t.addEventListener('focus', () => activate(i));
-      t.addEventListener('click', () => {
-        activate(i);
-        openLightbox(items, i);
-      });
+      t.addEventListener('click', () => activate(i));
     });
 
-    stageItems.forEach((b, i) => {
-      b.addEventListener('click', () => openLightbox(items, i));
-      const v = b.querySelector('video');
-      if (v) {
-        b.addEventListener('mouseenter', () => {
-          if (b.classList.contains('active')) void v.play().catch(() => undefined);
-        });
-        b.addEventListener('mouseleave', () => v.pause());
-      }
+    imageButtons.forEach((b, k) => {
+      b.addEventListener('click', () => openLightbox(imageItems, k));
     });
   }
 
-  function initAll() {
+  document.addEventListener('astro:page-load', () => {
     document.querySelectorAll<HTMLElement>('[data-gallery]').forEach(initGallery);
-  }
-
-  document.addEventListener('astro:page-load', initAll);
+  });
 </script>
 
 <style>
   .gallery {
-    margin-top: 1.75rem;
+    margin-top: 2rem;
+    --plyr-color-main: var(--global-theme-color);
   }
 
   .plate {
@@ -295,29 +273,27 @@ const items = figures.map((f, i) => ({
     width: 100%;
     padding: 10px;
     border: 1px solid var(--global-divider-color);
-    border-radius: 4px;
-    background: var(--global-card-bg-color, var(--global-bg-color));
-    cursor: zoom-in;
+    border-radius: 6px;
+    background: var(--global-card-bg-color);
     overflow: hidden;
     transition: border-color 0.2s ease;
   }
 
-  .plate:hover,
-  .plate:focus-visible {
+  button.plate {
+    cursor: zoom-in;
+  }
+
+  button.plate:hover,
+  button.plate:focus-visible {
     border-color: var(--global-theme-color);
     outline: none;
   }
 
-  .plate img,
-  .plate video {
+  .plate img {
     width: 100%;
     height: 100%;
     object-fit: contain;
     display: block;
-  }
-
-  .stage {
-    position: relative;
   }
 
   .stage-item {
@@ -329,54 +305,51 @@ const items = figures.map((f, i) => ({
     display: grid;
   }
 
-  .zoom-hint,
-  .play-cue {
-    position: absolute;
-    padding: 3px 8px;
-    border-radius: 3px;
-    background: rgba(0, 0, 0, 0.62);
-    color: #fff;
-    font-size: 0.68rem;
-    pointer-events: none;
+  .stage-item.is-video {
+    aspect-ratio: auto;
+    padding: 0;
+    background: #000;
+    border-color: transparent;
+  }
+
+  .stage-item.is-video :global(.plyr) {
+    width: 100%;
+    border-radius: 6px;
   }
 
   .zoom-hint {
+    position: absolute;
     right: 10px;
     bottom: 10px;
+    padding: 3px 9px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 0.72rem;
     opacity: 0;
     transition: opacity 0.2s ease;
+    pointer-events: none;
   }
 
-  .plate:hover .zoom-hint,
-  .plate:focus-visible .zoom-hint {
+  button.plate:hover .zoom-hint,
+  button.plate:focus-visible .zoom-hint {
     opacity: 1;
   }
 
-  .play-cue {
-    left: 10px;
-    bottom: 10px;
-  }
-
   .stage-caption {
-    margin: 0.6rem 0 0;
-    font-size: 0.85rem;
-    line-height: 1.5;
-    color: var(--global-text-color-light);
-    min-height: 2.6em;
-  }
-
-  .fig-n {
-    color: var(--global-theme-color);
-    margin-right: 0.5rem;
-    font-size: 0.75rem;
+    margin: 0.7rem 0 0;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--global-text-color);
+    min-height: 1.6em;
   }
 
   .thumbs {
     list-style: none;
-    margin: 0.75rem 0 0;
+    margin: 0.9rem 0 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
     gap: 8px;
   }
 
@@ -384,31 +357,39 @@ const items = figures.map((f, i) => ({
     aspect-ratio: 4 / 3;
     padding: 4px;
     cursor: pointer;
+    opacity: 0.75;
+  }
+
+  .thumb:hover,
+  .thumb.active {
+    opacity: 1;
+    border-color: var(--global-theme-color);
   }
 
   .thumb.active {
-    border-color: var(--global-theme-color);
     box-shadow: inset 0 0 0 1px var(--global-theme-color);
   }
 
   .thumb-play {
     position: absolute;
-    left: 6px;
-    bottom: 4px;
-    font-size: 0.7rem;
+    inset: 0;
+    display: grid;
+    place-items: center;
     color: #fff;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 0 4px;
-    border-radius: 2px;
+    pointer-events: none;
+  }
+
+  .thumb-play svg {
+    width: 22px;
+    height: 22px;
+    padding: 6px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
   }
 
   .thumb-video {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     color: var(--global-text-color-light);
-  }
-
-  .mono {
-    font-family: var(--font-mono, 'Source Code Pro', monospace);
   }
 
   /* Lightbox is created at runtime and appended to <body>, so it needs global styles. */
@@ -438,17 +419,12 @@ const items = figures.map((f, i) => ({
     min-height: 0;
   }
 
-  :global(.lb-media img),
-  :global(.lb-media video) {
+  :global(.lb-media img) {
     max-width: 100%;
     max-height: 82vh;
     object-fit: contain;
     background: #fff;
-    border-radius: 3px;
-  }
-
-  :global(.lb-media video) {
-    background: #000;
+    border-radius: 4px;
   }
 
   :global(.lb-caption) {
@@ -457,7 +433,7 @@ const items = figures.map((f, i) => ({
     margin: 0 auto;
     max-width: 60rem;
     color: #e8e8e8;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     text-align: center;
   }
 

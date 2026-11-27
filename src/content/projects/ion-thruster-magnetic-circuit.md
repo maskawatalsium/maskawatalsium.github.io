@@ -3,7 +3,6 @@ title: Magnetic Circuit Fabrication for a 200 mm Ion Thruster
 description: Hands-on fabrication of the magnetic circuit for a laboratory 200 mm ion thruster.
 importance: 4
 affiliation: Laboratory project
-role: Fabricated the magnetic circuit — pole pieces and excitation coils
 methods: [Magnetic circuit assembly, coil winding and fitting]
 tools: [SolidWorks]
 figures:

@@ -1,7 +1,7 @@
 ---
 /**
- * One research study or project, rendered inline:
- * code rail · kicker · title · summary · status · spec table · text · links · gallery.
+ * One research study or project:
+ * affiliation/date line · title · summary · text with an "at a glance" panel · gallery.
  */
 import { withBase } from '@utils/base';
 import type { CollectionEntry } from 'astro:content';
@@ -11,195 +11,154 @@ import Gallery from './Gallery.astro';
 
 interface Props {
   entry: CollectionEntry<'projects'>;
-  /** Rail code, e.g. "R/01" or "P/03". */
-  code: string;
+  /** Render the title as the page's h1 (project detail pages). */
+  asPage?: boolean;
 }
 
-const { entry, code } = Astro.props;
+const { entry, asPage = false } = Astro.props;
 const { Content } = await render(entry);
-const { title, description, affiliation, period, role, methods, tools, status, figures, links } =
+const { title, description, affiliation, period, methods, tools, status, figures, links } =
   entry.data;
 
-const kicker = [affiliation, period].filter(Boolean).join(' · ');
-const specs = [
-  { k: 'Role', v: role },
-  { k: 'Methods', v: methods?.join(' · ') },
-  { k: 'Software', v: tools?.join(' · ') },
-].filter((s) => s.v);
-const label = code.replace('/', '').replace(/^([A-Z])0*/, '$1');
+const hasFacts = Boolean(status || methods?.length || tools?.length);
 const resolve = (href: string) => (href.startsWith('/') ? withBase(href) : href);
+const Title = asPage ? 'h1' : 'h2';
 ---
 
-<article class="study" id={entry.id}>
-  <div class="study-rail" aria-hidden="true">
-    <span class="mono rail-code">{code}</span>
-    <span class="rail-line"></span>
-  </div>
-
-  <div class="study-main">
-    {kicker && <p class="mono study-kicker">{kicker}</p>}
-    <h3 class="study-title">{title}</h3>
-    {description && <p class="study-sub">{description}</p>}
-
+<article class:list={['study', { 'as-page': asPage }]} id={entry.id}>
+  <header class="study-head">
     {
-      status && (
-        <p class="study-status">
-          <span class="status-mark" aria-hidden="true">
-            ◆
-          </span>
-          {status}
+      (affiliation || period) && (
+        <p class="study-meta">
+          {affiliation && <span class="meta-org">{affiliation}</span>}
+          {period && <span class="meta-date">{period}</span>}
         </p>
       )
     }
+    <Title class="study-title">{title}</Title>
+    {description && <p class="study-sub">{description}</p>}
+  </header>
 
-    {
-      specs.length > 0 && (
-        <dl class="spec-table">
-          {specs.map((s) => (
-            <div>
-              <dt class="mono">{s.k}</dt>
-              <dd>{s.v}</dd>
-            </div>
-          ))}
-        </dl>
-      )
-    }
-
-    <div class="prose study-body">
+  <div class:list={['study-grid', { 'no-facts': !hasFacts }]}>
+    <div class="study-body prose">
       <Content />
+      {
+        links && links.length > 0 && (
+          <p class="out-links">
+            {links.map((l) => (
+              <a
+                href={resolve(l.href)}
+                target={l.href.startsWith('http') ? '_blank' : undefined}
+                rel={l.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+              >
+                {l.label} <span aria-hidden="true">&rarr;</span>
+              </a>
+            ))}
+          </p>
+        )
+      }
     </div>
 
     {
-      links && links.length > 0 && (
-        <p class="out-links">
-          {links.map((l) => (
-            <a
-              href={resolve(l.href)}
-              target={l.href.startsWith('http') ? '_blank' : undefined}
-              rel={l.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-            >
-              {l.label} &rarr;
-            </a>
-          ))}
-        </p>
+      hasFacts && (
+        <aside class="study-facts" aria-label="At a glance">
+          {status && <p class="fact-status">{status}</p>}
+          {methods && methods.length > 0 && (
+            <div class="fact">
+              <h3>Methods</h3>
+              <ul class="chips">
+                {methods.map((m) => (
+                  <li>{m}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {tools && tools.length > 0 && (
+            <div class="fact">
+              <h3>Tools</h3>
+              <ul class="chips">
+                {tools.map((t) => (
+                  <li>{t}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </aside>
       )
     }
-
-    {figures && figures.length > 0 && <Gallery figures={figures} label={label} />}
   </div>
+
+  {figures && figures.length > 0 && <Gallery figures={figures} />}
 </article>
 
 <style>
   .study {
-    display: grid;
-    grid-template-columns: 84px minmax(0, 1fr);
-    padding: 2.75rem 0;
+    padding: 3rem 0;
     border-top: 1px solid var(--global-divider-color);
     scroll-margin-top: 4.5rem;
   }
 
-  .study-rail {
+  .study.as-page {
+    padding-top: 0.5rem;
+    border-top: none;
+  }
+
+  .study-meta {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-    position: sticky;
-    top: 5rem;
-    align-self: start;
-    height: 100%;
-    max-height: 14rem;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    margin: 0 0 0.55rem;
+    font-size: 0.88rem;
   }
 
-  .rail-code {
-    font-size: 0.8rem;
+  .meta-org {
     color: var(--global-theme-color);
-    letter-spacing: 0.04em;
+    font-weight: 500;
   }
 
-  .rail-line {
-    width: 1px;
-    flex: 1;
-    min-height: 3rem;
-    background: var(--global-divider-color);
-  }
-
-  .mono {
-    font-family: var(--font-mono);
-  }
-
-  .study-kicker {
-    margin: 0 0 0.5rem;
-    font-size: 0.78rem;
-    letter-spacing: 0.02em;
+  .meta-date {
     color: var(--global-text-color-light);
+    font-variant-numeric: tabular-nums;
   }
 
   .study-title {
     margin: 0 0 0.6rem;
-    font-size: 1.45rem;
-    font-weight: 600;
+    font-size: 1.65rem;
+    font-weight: 700;
     line-height: 1.25;
+    letter-spacing: -0.01em;
     color: var(--global-text-color);
+  }
+
+  .as-page .study-title {
+    font-size: 2rem;
   }
 
   .study-sub {
-    margin: 0 0 1.1rem;
-    font-size: 1rem;
+    margin: 0;
+    max-width: 46em;
+    font-size: 1.08rem;
     line-height: 1.6;
     color: var(--global-text-color-light);
-    max-width: 44em;
   }
 
-  .study-status {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 0.5rem;
-    margin: 0 0 1.25rem;
-    padding: 0.3rem 0.8rem;
-    border: 1px solid var(--global-divider-color);
-    border-radius: 999px;
-    font-size: 0.8rem;
-    color: var(--global-text-color);
-  }
-
-  .status-mark {
-    color: var(--global-theme-color);
-    font-size: 0.7rem;
-  }
-
-  .spec-table {
-    margin: 0 0 1.4rem;
-    border-top: 1px solid var(--global-divider-color);
-  }
-
-  .spec-table > div {
+  .study-grid {
     display: grid;
-    grid-template-columns: 7.5rem minmax(0, 1fr);
-    gap: 1rem;
-    padding: 0.55rem 0;
-    border-bottom: 1px solid var(--global-divider-color);
+    grid-template-columns: minmax(0, 1fr) 15.5rem;
+    gap: 2.25rem;
+    margin-top: 1.75rem;
+    align-items: start;
   }
 
-  .spec-table dt {
-    margin: 0;
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--global-text-color-light);
-    padding-top: 0.15rem;
-  }
-
-  .spec-table dd {
-    margin: 0;
-    font-size: 0.92rem;
-    line-height: 1.55;
-    color: var(--global-text-color);
+  .study-grid.no-facts {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .study-body {
-    max-width: 46em;
-    font-size: 0.98rem;
-    line-height: 1.7;
+    font-size: 1.02rem;
+    line-height: 1.75;
+    color: var(--global-text-color);
   }
 
   .study-body :global(p:last-child),
@@ -211,12 +170,13 @@ const resolve = (href: string) => (href.startsWith('/') ? withBase(href) : href)
     display: flex;
     flex-wrap: wrap;
     gap: 1.25rem;
-    margin: 1rem 0 0;
-    font-size: 0.9rem;
+    margin: 1.1rem 0 0 !important;
+    font-size: 0.95rem;
   }
 
   .out-links a {
     color: var(--global-theme-color);
+    font-weight: 500;
     text-decoration: none;
   }
 
@@ -224,30 +184,66 @@ const resolve = (href: string) => (href.startsWith('/') ? withBase(href) : href)
     text-decoration: underline;
   }
 
-  @media (max-width: 640px) {
+  .study-facts {
+    padding: 1.1rem 1.2rem;
+    border: 1px solid var(--global-divider-color);
+    border-radius: 8px;
+    background: var(--global-card-bg-color);
+  }
+
+  .fact-status {
+    margin: 0 0 1rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid var(--global-divider-color);
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.45;
+    color: var(--global-text-color);
+  }
+
+  .fact + .fact {
+    margin-top: 1rem;
+  }
+
+  .fact h3 {
+    margin: 0 0 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--global-text-color-light);
+  }
+
+  .chips {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  .chips li {
+    margin: 0;
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--global-divider-color);
+    border-radius: 999px;
+    background: var(--global-bg-color);
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: var(--global-text-color);
+  }
+
+  @media (max-width: 760px) {
     .study {
+      padding: 2.25rem 0;
+    }
+
+    .study-grid {
       grid-template-columns: minmax(0, 1fr);
-      padding: 2rem 0;
+      gap: 1.5rem;
     }
 
-    .study-rail {
-      position: static;
-      flex-direction: row;
-      align-items: center;
-      max-height: none;
-      margin-bottom: 0.75rem;
-    }
-
-    .rail-line {
-      height: 1px;
-      width: 3rem;
-      min-height: 0;
-      flex: 0 0 3rem;
-    }
-
-    .spec-table > div {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 0.15rem;
+    .study-title {
+      font-size: 1.4rem;
     }
   }
 </style>

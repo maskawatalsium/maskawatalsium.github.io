@@ -4,7 +4,6 @@ description: A self-initiated 3-D model of a twin-engine airliner, built from sc
 importance: 5
 period: 2022
 affiliation: Personal project
-role: Everything — modelling, surfacing and livery
 methods: [Solid and surface modelling, assembly]
 tools: [Autodesk Inventor]
 figures:

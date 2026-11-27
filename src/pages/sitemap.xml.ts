@@ -16,6 +16,7 @@ import { spawnSync } from 'node:child_process';
 
 import { site } from '@config/site';
 import type { APIContext } from 'astro';
+import { getCollection } from 'astro:content';
 
 const siteUrl = site.url.replace(/\/$/, '');
 const base = (site.base ?? '').replace(/\/$/, '');
@@ -112,7 +113,16 @@ export async function GET(_ctx: APIContext): Promise<Response> {
     },
   ];
 
-  const allUrls = staticUrls;
+  const projectUrls: UrlEntry[] = (
+    await getCollection('projects', (p) => p.data.category !== 'research')
+  ).map((p) => ({
+    url: loc(`/projects/${p.id}/`),
+    lastmod: p.filePath ? gitLastmod(p.filePath) : undefined,
+    changefreq: 'monthly',
+    priority: 0.6,
+  }));
+
+  const allUrls = [...staticUrls, ...projectUrls];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

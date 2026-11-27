@@ -15,63 +15,70 @@ const experience = (cv.sections.experience ?? []) as RenderCVEntry[];
 
 const range = (e: RenderCVEntry) =>
   e.start_date ? formatDateRange(e.start_date, e.end_date) : String(e.date ?? '');
+
+// Group consecutive roles at the same company (LinkedIn style).
+type Group = { company: string; roles: RenderCVEntry[] };
+const groups: Group[] = [];
+for (const e of experience) {
+  const last = groups[groups.length - 1];
+  if (last && last.company === e.company) last.roles.push(e);
+  else groups.push({ company: e.company ?? '', roles: [e] });
+}
 ---
 
 <Page title="Education" description={`Education and experience of ${site.author.name}`}>
   <div class="post">
     <SectionHead
-      num="04"
-      name="Education"
-      title="Degrees and experience"
+      title="Education & experience"
       sub="Mechanical engineering at NCEPU, now aerospace engineering at BIT."
     />
 
-    <ol class="timeline">
+    <h2 class="block-title">Education</h2>
+    <div class="degrees">
       {
         education.map((e) => (
-          <li class="tl-item">
-            <span class="tl-date mono">{range(e)}</span>
-            <div class="tl-body">
-              <h2 class="tl-title">
-                {e.degree} in {e.area}
-              </h2>
-              <p class="tl-org">
-                {e.institution}
-                {e.location && <span class="tl-loc"> · {e.location}</span>}
-              </p>
-              {e.highlights && (
-                <ul class="tl-points">
-                  {e.highlights.map((h) => (
-                    <li>{h}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </li>
+          <article class="degree">
+            <span class="date-pill">{range(e)}</span>
+            <h3 class="degree-title">
+              {e.degree} in {e.area}
+            </h3>
+            <p class="degree-org">{e.institution}</p>
+            {e.location && <p class="degree-loc">{e.location}</p>}
+            {e.highlights && (
+              <ul class="points">
+                {e.highlights.map((h) => (
+                  <li>{h}</li>
+                ))}
+              </ul>
+            )}
+          </article>
         ))
       }
-    </ol>
+    </div>
 
-    <h2 class="sub-head"><span class="mono sub-k">Experience</span></h2>
+    <h2 class="block-title">Experience</h2>
     <ol class="timeline">
       {
-        experience.map((e) => (
-          <li class="tl-item">
-            <span class="tl-date mono">{range(e)}</span>
-            <div class="tl-body">
-              <h3 class="tl-title">{e.position}</h3>
-              <p class="tl-org">
-                {e.company}
-                {e.location && <span class="tl-loc"> · {e.location}</span>}
-              </p>
-              {e.highlights && (
-                <ul class="tl-points">
-                  {e.highlights.map((h) => (
-                    <li>{h}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
+        groups.map((g) => (
+          <li class="tl-group">
+            <span class="tl-dot" aria-hidden="true" />
+            <h3 class="tl-company">{g.company}</h3>
+            {g.roles.map((r) => (
+              <div class="tl-role">
+                <div class="role-head">
+                  <p class="role-title">{r.position}</p>
+                  <span class="date-pill">{range(r)}</span>
+                </div>
+                {r.location && <p class="role-loc">{r.location}</p>}
+                {r.highlights && (
+                  <ul class="points">
+                    {r.highlights.map((h) => (
+                      <li>{h}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
           </li>
         ))
       }
@@ -79,9 +86,9 @@ const range = (e: RenderCVEntry) =>
 
     <p class="cv-links">
       <a href={withBase(site.cv.pdfPath)} target="_blank" rel="noopener noreferrer"
-        >Download CV (PDF) &rarr;</a
+        >Download CV (PDF) <span aria-hidden="true">&rarr;</span></a
       >
-      <a href={withBase('/cv/')}>Full CV page &rarr;</a>
+      <a href={withBase('/cv/')}>Full CV page <span aria-hidden="true">&rarr;</span></a>
     </p>
   </div>
 </Page>
@@ -91,93 +98,151 @@ const range = (e: RenderCVEntry) =>
     padding-top: 0;
   }
 
-  .mono {
-    font-family: var(--font-mono);
+  .block-title {
+    margin: 2.25rem 0 1rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--global-text-color);
   }
 
+  .date-pill {
+    display: inline-block;
+    padding: 0.15rem 0.65rem;
+    border: 1px solid var(--global-theme-color);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    line-height: 1.5;
+    white-space: nowrap;
+    color: var(--global-theme-color);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .points {
+    margin: 0.7rem 0 0;
+    padding-left: 1.15rem;
+    list-style: disc;
+    font-size: 0.96rem;
+    line-height: 1.65;
+    color: var(--global-text-color);
+  }
+
+  .points li {
+    margin: 0.25rem 0;
+  }
+
+  .points li::marker {
+    color: var(--global-theme-color);
+  }
+
+  /* Degrees */
+  .degrees {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+    gap: 1rem;
+  }
+
+  .degree {
+    padding: 1.25rem 1.35rem;
+    border: 1px solid var(--global-divider-color);
+    border-radius: 10px;
+    background: var(--global-card-bg-color);
+  }
+
+  .degree-title {
+    margin: 0.75rem 0 0.3rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--global-text-color);
+  }
+
+  .degree-org {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--global-text-color);
+  }
+
+  .degree-loc,
+  .role-loc {
+    margin: 0.1rem 0 0;
+    font-size: 0.9rem;
+    color: var(--global-text-color-light);
+  }
+
+  /* Experience timeline */
   .timeline {
     list-style: none;
-    margin: 0 0 2.5rem;
-    padding: 0;
-    border-top: 1px solid var(--global-divider-color);
+    margin: 0;
+    padding: 0 0 0 1.5rem;
+    border-left: 2px solid var(--global-divider-color);
   }
 
-  .tl-item {
-    display: grid;
-    grid-template-columns: 11rem minmax(0, 1fr);
-    gap: 1.25rem;
-    padding: 1.25rem 0;
-    border-bottom: 1px solid var(--global-divider-color);
+  .tl-group {
+    position: relative;
+    padding: 0 0 1.9rem;
   }
 
-  .tl-date {
-    font-size: 0.8rem;
-    color: var(--global-theme-color);
-    padding-top: 0.2rem;
+  .tl-group:last-child {
+    padding-bottom: 0.25rem;
   }
 
-  .tl-title {
-    margin: 0 0 0.2rem;
-    font-size: 1.1rem;
-    font-weight: 600;
+  .tl-dot {
+    position: absolute;
+    left: calc(-1.5rem - 7px);
+    top: 0.35rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--global-bg-color);
+    border: 2px solid var(--global-theme-color);
+  }
+
+  .tl-company {
+    margin: 0 0 0.5rem;
+    font-size: 1.15rem;
+    font-weight: 700;
     line-height: 1.35;
     color: var(--global-text-color);
   }
 
-  .tl-org {
+  .tl-role + .tl-role {
+    margin-top: 1.1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--global-divider-color);
+  }
+
+  .role-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem 1rem;
+  }
+
+  .role-title {
     margin: 0;
-    font-size: 0.92rem;
+    font-size: 1.02rem;
+    font-weight: 600;
     color: var(--global-text-color);
-  }
-
-  .tl-loc {
-    color: var(--global-text-color-light);
-  }
-
-  .tl-points {
-    margin: 0.5rem 0 0;
-    padding-left: 1.1rem;
-    list-style: disc;
-    font-size: 0.9rem;
-    line-height: 1.55;
-    color: var(--global-text-color-light);
-  }
-
-  .tl-points li {
-    margin: 0.15rem 0;
-  }
-
-  .sub-head {
-    margin: 0 0 0.75rem;
-  }
-
-  .sub-k {
-    font-size: 0.8rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--global-theme-color);
   }
 
   .cv-links {
     display: flex;
     flex-wrap: wrap;
     gap: 1.5rem;
-    font-size: 0.95rem;
+    margin-top: 2.25rem;
+    font-size: 0.98rem;
   }
 
   .cv-links a {
     color: var(--global-theme-color);
+    font-weight: 500;
     text-decoration: none;
   }
 
   .cv-links a:hover {
     text-decoration: underline;
-  }
-
-  @media (max-width: 640px) {
-    .tl-item {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 0.3rem;
-    }
   }
 </style>

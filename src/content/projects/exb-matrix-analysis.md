@@ -2,9 +2,9 @@
 title: Matrix Analysis for ExB Probe IVDF Reconstruction
 description: A linear-algebra view of what an ExB probe actually measures, and how to recover the true ion velocity distribution from it.
 importance: 3
+img: /assets/img/projects/matrix-preview.png
 period: Dec 2025
 affiliation: Graduate analytical project · Beijing Institute of Technology
-role: Individual project — formulation, analysis and report
 methods: [Response-matrix model, SVD and conditioning, Tikhonov regularisation, non-negative least squares]
 links:
   - label: The ExB probe this supports

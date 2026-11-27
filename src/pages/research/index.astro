@@ -35,27 +35,21 @@ const papers = parseBibtex(bibRaw).map((e) => {
 <Page title="Research" description={`Research by ${site.author.name}`}>
   <div class="post">
     <SectionHead
-      num="02"
-      name="Research"
       title="Plasma sources and diagnostics for electric propulsion"
       sub={site.pages.research.description}
     />
 
-    {
-      entries.map((entry, i) => (
-        <Study entry={entry} code={`R/${String(i + 1).padStart(2, '0')}`} />
-      ))
-    }
+    {entries.map((entry) => <Study entry={entry} />)}
 
     <section id="publications" class="pubs">
-      <p class="mono pubs-kicker">Earlier work</p>
+      <p class="pubs-kicker">Earlier work</p>
       <h2 class="pubs-title">Publications</h2>
       <p class="pubs-sub">Journal papers from my undergraduate studies.</p>
       <ol class="pub-list">
         {
           papers.map((p) => (
             <li class="pub">
-              <span class="mono pub-year">{p.year}</span>
+              <span class="pub-year">{p.year}</span>
               <div class="pub-body">
                 <p class="pub-title">
                   {p.doi ? (
@@ -116,17 +110,16 @@ const papers = parseBibtex(bibRaw).map((e) => {
   }
 
   .pubs-kicker {
-    margin: 0 0 0.4rem;
-    font-size: 0.78rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    margin: 0 0 0.45rem;
+    font-size: 0.88rem;
+    font-weight: 500;
     color: var(--global-theme-color);
   }
 
   .pubs-title {
     margin: 0 0 0.4rem;
-    font-size: 1.45rem;
-    font-weight: 600;
+    font-size: 1.65rem;
+    font-weight: 700;
   }
 
   .pubs-sub {
@@ -150,9 +143,11 @@ const papers = parseBibtex(bibRaw).map((e) => {
   }
 
   .pub-year {
-    font-size: 0.85rem;
+    font-size: 0.92rem;
+    font-weight: 600;
     color: var(--global-theme-color);
-    padding-top: 0.1rem;
+    font-variant-numeric: tabular-nums;
+    padding-top: 0.05rem;
   }
 
   .pub-body p {
@@ -175,7 +170,7 @@ const papers = parseBibtex(bibRaw).map((e) => {
 
   .pub-authors,
   .pub-venue {
-    font-size: 0.88rem;
+    font-size: 0.92rem;
     color: var(--global-text-color-light);
   }
 

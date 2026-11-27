@@ -1,60 +1,36 @@
 ---
-/** Numbered section header: "02 · Research", a title line and an optional subtitle. */
+/** Page header: a title line and an optional subtitle. */
 interface Props {
-  num: string;
-  name: string;
   title: string;
   sub?: string;
 }
 
-const { num, name, title, sub } = Astro.props;
+const { title, sub } = Astro.props;
 ---
 
 <header class="sec-head">
-  <p class="sec-num">
-    <span class="sec-i">{num}</span>
-    <span class="sec-nm">{name}</span>
-  </p>
   <h1 class="sec-title">{title}</h1>
   {sub && <p class="sec-sub">{sub}</p>}
 </header>
 
 <style>
   .sec-head {
-    margin-bottom: 1.5rem;
-  }
-
-  .sec-num {
-    display: flex;
-    gap: 0.6rem;
-    align-items: baseline;
-    margin: 0 0 0.6rem;
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  .sec-i {
-    color: var(--global-theme-color);
-  }
-
-  .sec-nm {
-    color: var(--global-text-color-light);
+    margin-bottom: 1.25rem;
   }
 
   .sec-title {
     margin: 0 0 0.5rem;
-    font-size: 2rem;
+    font-size: 2.1rem;
     font-weight: 700;
     line-height: 1.2;
+    letter-spacing: -0.015em;
     color: var(--global-text-color);
   }
 
   .sec-sub {
     margin: 0;
     max-width: 44em;
-    font-size: 1.02rem;
+    font-size: 1.08rem;
     line-height: 1.6;
     color: var(--global-text-color-light);
   }

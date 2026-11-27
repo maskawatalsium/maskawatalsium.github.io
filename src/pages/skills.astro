@@ -10,70 +10,86 @@ import cvRaw from '../data/cv.yml?raw';
 import skillsRaw from '../data/skills.yml?raw';
 
 type Group = { group: string; items: string[] };
-const groups = (yaml.load(skillsRaw) as Group[]).sort((a, b) => b.items.length - a.items.length);
+const groups = yaml.load(skillsRaw) as Group[];
 
-// Tools named in research/project entries — matching skills get a "used" marker.
-const used = new Set(
-  (await getCollection('projects')).flatMap((p) => p.data.tools ?? []).map((t) => t.toLowerCase()),
-);
+// Tools named in research/project entries — matching skills are highlighted.
+const used = (await getCollection('projects'))
+  .flatMap((p) => p.data.tools ?? [])
+  .map((t) => t.toLowerCase());
 const isUsed = (item: string) => {
   const s = item.toLowerCase();
-  return [...used].some((t) => s.includes(t) || t.includes(s));
+  return used.some((t) => s.includes(t) || t.includes(s));
 };
 
-// Newest first; undated awards last.
+const sections = (yaml.load(cvRaw) as RenderCV).cv.sections;
+// Newest first; undated entries last.
 const firstYear = (a: RenderCVEntry) => Number(String(a.date ?? '').match(/\d{4}/)?.[0] ?? 0);
-const awards = (((yaml.load(cvRaw) as RenderCV).cv.sections.awards ?? []) as RenderCVEntry[]).sort(
-  (a, b) => firstYear(b) - firstYear(a),
-);
+const byYear = (a: RenderCVEntry, b: RenderCVEntry) => firstYear(b) - firstYear(a);
+const awards = ((sections.awards ?? []) as RenderCVEntry[]).sort(byYear);
+const recognition = ((sections.recognition ?? []) as RenderCVEntry[]).sort(byYear);
 ---
 
 <Page title="Skills" description={`Skills and achievements of ${site.author.name}`}>
   <div class="post">
     <SectionHead
-      num="05"
-      name="Skills"
-      title="Simulation, design and lab tools"
-      sub="Marked items are used in the research and projects on this site."
+      title="Skills"
+      sub="Simulation, design and laboratory tools. Highlighted skills are used in the research and projects on this site."
     />
 
-    <div class="tool-grid">
+    <dl class="skill-rows">
       {
         groups.map((g) => (
-          <section class="tool-card">
-            <div class="tool-head">
-              <h2 class="mono panel-label">{g.group}</h2>
-              <span class="mono tool-n" aria-hidden="true">
-                {String(g.items.length).padStart(2, '0')}
-              </span>
-            </div>
-            <ul>
-              {g.items.map((item) => (
-                <li class:list={{ used: isUsed(item) }}>
-                  {item}
-                  {isUsed(item) && <span class="visually-hidden"> — used in my work</span>}
-                </li>
-              ))}
-            </ul>
-          </section>
+          <div class="skill-row">
+            <dt>{g.group}</dt>
+            <dd>
+              <ul class="chips">
+                {g.items.map((item) => (
+                  <li class:list={{ used: isUsed(item) }}>
+                    {item}
+                    {isUsed(item) && <span class="visually-hidden"> (used in my work)</span>}
+                  </li>
+                ))}
+              </ul>
+            </dd>
+          </div>
         ))
       }
-    </div>
+    </dl>
 
-    <h2 class="sub-head"><span class="mono sub-k">Honours &amp; awards</span></h2>
+    <h2 class="block-title">Honours &amp; awards</h2>
     <ol class="awards">
       {
         awards.map((a) => (
           <li class="award">
-            <span class="mono award-year">{a.date ?? ''}</span>
+            {a.date ? <span class="year-pill">{a.date}</span> : <span />}
             <div>
               <p class="award-name">{a.name}</p>
               {a.issuer && <p class="award-issuer">{a.issuer}</p>}
+              {a.highlights?.[0] && <p class="award-note">{a.highlights[0]}</p>}
             </div>
           </li>
         ))
       }
     </ol>
+
+    {
+      recognition.length > 0 && (
+        <>
+          <h2 class="block-title">Recognition &amp; volunteering</h2>
+          <ul class="recog">
+            {recognition.map((r) => (
+              <li>
+                <span class="recog-year">{r.date}</span>
+                <span>
+                  <strong>{r.name}</strong>
+                  {r.issuer && <span class="recog-issuer"> — {r.issuer}</span>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )
+    }
   </div>
 </Page>
 
@@ -82,75 +98,55 @@ const awards = (((yaml.load(cvRaw) as RenderCV).cv.sections.awards ?? []) as Ren
     padding-top: 0;
   }
 
-  .mono {
-    font-family: var(--font-mono);
+  .skill-rows {
+    margin: 1.25rem 0 0;
+    border-top: 1px solid var(--global-divider-color);
   }
 
-  .tool-grid {
+  .skill-row {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-    gap: 1rem;
-    align-items: start;
-    margin: 0 0 2.5rem;
-  }
-
-  .tool-card {
-    padding: 1.1rem 1.25rem 0.9rem;
-    border: 1px solid var(--global-divider-color);
-    border-radius: 4px;
-    background: var(--global-card-bg-color);
-  }
-
-  .tool-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 0.6rem;
-    padding-bottom: 0.5rem;
+    grid-template-columns: 13rem minmax(0, 1fr);
+    gap: 1.25rem;
+    padding: 1.1rem 0;
     border-bottom: 1px solid var(--global-divider-color);
   }
 
-  .panel-label {
+  .skill-row dt {
     margin: 0;
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    padding-top: 0.3rem;
+    font-size: 1rem;
+    font-weight: 700;
     color: var(--global-text-color);
   }
 
-  .tool-n {
-    font-size: 0.75rem;
-    color: var(--global-theme-color);
+  .skill-row dd {
+    margin: 0;
   }
 
-  .tool-card ul {
+  .chips {
     list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
     margin: 0;
     padding: 0;
   }
 
-  .tool-card li {
-    position: relative;
-    padding: 0.25rem 0 0.25rem 1rem;
+  .chips li {
+    margin: 0;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid var(--global-divider-color);
+    border-radius: 999px;
+    background: var(--global-card-bg-color);
     font-size: 0.92rem;
+    line-height: 1.4;
     color: var(--global-text-color);
   }
 
-  .tool-card li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0.75em;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    border: 1px solid var(--global-text-color-light);
-  }
-
-  .tool-card li.used::before {
-    background: var(--global-theme-color);
+  .chips li.used {
     border-color: var(--global-theme-color);
+    color: var(--global-theme-color);
+    font-weight: 500;
   }
 
   .visually-hidden {
@@ -162,56 +158,105 @@ const awards = (((yaml.load(cvRaw) as RenderCV).cv.sections.awards ?? []) as Ren
     white-space: nowrap;
   }
 
-  .sub-head {
-    margin: 0 0 0.75rem;
-  }
-
-  .sub-k {
-    font-size: 0.8rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--global-theme-color);
+  .block-title {
+    margin: 2.5rem 0 1rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--global-text-color);
   }
 
   .awards {
     list-style: none;
     margin: 0;
     padding: 0;
-    border-top: 1px solid var(--global-divider-color);
+    display: grid;
+    gap: 0.75rem;
   }
 
   .award {
     display: grid;
-    grid-template-columns: 7rem minmax(0, 1fr);
+    grid-template-columns: 6.5rem minmax(0, 1fr);
     gap: 1rem;
-    padding: 0.8rem 0;
-    border-bottom: 1px solid var(--global-divider-color);
+    align-items: start;
+    padding: 1rem 1.2rem;
+    border: 1px solid var(--global-divider-color);
+    border-radius: 10px;
+    background: var(--global-card-bg-color);
   }
 
   .award p {
     margin: 0;
   }
 
-  .award-year {
-    font-size: 0.82rem;
+  .year-pill {
+    justify-self: start;
+    padding: 0.15rem 0.65rem;
+    border: 1px solid var(--global-theme-color);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
     color: var(--global-theme-color);
-    padding-top: 0.1rem;
+    font-variant-numeric: tabular-nums;
   }
 
   .award-name {
-    font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 1.02rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--global-text-color);
   }
 
   .award-issuer {
-    font-size: 0.85rem;
+    margin-top: 0.1rem !important;
+    font-size: 0.92rem;
+    color: var(--global-text-color-light);
+  }
+
+  .award-note {
+    margin-top: 0.35rem !important;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: var(--global-text-color);
+  }
+
+  .recog {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--global-divider-color);
+  }
+
+  .recog li {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    gap: 1rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid var(--global-divider-color);
+    font-size: 0.95rem;
+    color: var(--global-text-color);
+  }
+
+  .recog strong {
+    font-weight: 600;
+  }
+
+  .recog-year {
+    color: var(--global-theme-color);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .recog-issuer {
     color: var(--global-text-color-light);
   }
 
   @media (max-width: 640px) {
-    .award {
+    .skill-row,
+    .award,
+    .recog li {
       grid-template-columns: minmax(0, 1fr);
-      gap: 0.2rem;
+      gap: 0.5rem;
     }
   }
 </style>

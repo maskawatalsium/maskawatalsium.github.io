@@ -127,7 +127,7 @@ export const site = {
       { label: 'Contact', href: '/contact/' },
     ] as NavItem[],
     /** Prefix each top-level item with its position ("01", "02", …). */
-    numbered: true,
+    numbered: false,
   },
 
   // ─── Footer ────────────────────────────────────────────────────────────────

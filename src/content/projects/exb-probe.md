@@ -4,8 +4,7 @@ description: A modular Wien-filter probe that separates the ion charge states in
 category: research
 importance: 1
 period: Sep 2025 – present
-affiliation: High-Power Electric Propulsion Lab · Beijing Institute of Technology
-role: Research assistant (supervisor Prof. Zhang Zhe) — probe design, drawings, field and trajectory simulation, test protocol
+affiliation: High-Power Electric Propulsion Lab, Beijing Institute of Technology · Supervisor Prof. Zhang Zhe
 methods: [Wien-filter (E×B) velocity selection, electrostatic and magnetostatic field modelling, ion trajectory tracing]
 tools: [SolidWorks, COMSOL Multiphysics]
 status: Ongoing — measured spectra are unpublished
@@ -22,7 +21,7 @@ figures:
     caption: Simplified probe geometry used for the field simulation.
 links:
   - label: Related analysis — matrix model of the probe response
-    href: /projects/#exb-matrix-analysis
+    href: /projects/exb-matrix-analysis/
 ---
 
 A Hall thruster plume contains Xe⁺, Xe²⁺ and Xe³⁺ ions. An ExB probe crosses an electric and a

@@ -4,8 +4,7 @@ description: Designing, building and instrumenting a high-current hollow cathode
 category: research
 importance: 2
 period: Jan 2024 – Jun 2025
-affiliation: BSc thesis · North China Electric Power University · experiments at Beijing Institute of Technology
-role: Designed and fabricated the cathode, ran the experiments and built the model (supervisor Dr. Zhang Hui)
+affiliation: BSc thesis, North China Electric Power University · Supervisor Dr. Zhang Hui
 methods: [Type-C (W-Re) thermocouples in the emitter, voltage–current and power sweeps, 0-D plasma-thermal model]
 tools: [SolidWorks, AutoCAD, MATLAB, CNC and EDM machining]
 status: Undergraduate thesis, June 2025

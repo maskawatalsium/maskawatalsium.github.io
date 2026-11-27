@@ -4,7 +4,6 @@ description: Learning a lifted linear model of a quadrotor from data, then using
 importance: 2
 period: Jan 2026
 affiliation: Aircraft Guidance and Control Theory · Beijing Institute of Technology
-role: Individual project — reproduced and analysed a published learning-and-control workflow
 methods: [Koopman operator, EDMD with control, rotation-matrix attitude, linear MPC as a quadratic program]
 tools: [MATLAB, quadprog]
 figures:

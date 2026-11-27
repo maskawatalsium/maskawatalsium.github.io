@@ -52,8 +52,6 @@ const links = [
 <Page title="Contact" description={`Contact ${site.author.name}`}>
   <div class="post">
     <SectionHead
-      num="06"
-      name="Contact"
       title="Get in touch"
       sub="For questions about my research, collaboration, or a copy of my thesis, email is the best way to reach me."
     />
@@ -62,11 +60,11 @@ const links = [
       {
         emails.map((e, i) => (
           <div class="row-item">
-            <dt class="mono">{i === 0 ? 'Email' : 'Email (personal)'}</dt>
+            <dt>{i === 0 ? 'Email' : 'Email (personal)'}</dt>
             <dd>
               <IconEnvelope class="c-icon" aria-hidden="true" />
               <a href={`mailto:${e}`}>{e}</a>
-              <button type="button" class="copy-btn mono" data-copy={e}>
+              <button type="button" class="copy-btn" data-copy={e}>
                 Copy
               </button>
             </dd>
@@ -76,7 +74,7 @@ const links = [
       {
         links.map((l) => (
           <div class="row-item">
-            <dt class="mono">{l.label}</dt>
+            <dt>{l.label}</dt>
             <dd>
               <l.Icon class="c-icon" aria-hidden="true" />
               <a href={l.href} target="_blank" rel="noopener noreferrer">
@@ -87,7 +85,7 @@ const links = [
         ))
       }
       <div class="row-item">
-        <dt class="mono">CV</dt>
+        <dt>CV</dt>
         <dd>
           <IconFilePdf class="c-icon" aria-hidden="true" />
           <a href={withBase(site.cv.pdfPath)} target="_blank" rel="noopener noreferrer"
@@ -96,7 +94,7 @@ const links = [
         </dd>
       </div>
       <div class="row-item">
-        <dt class="mono">Location</dt>
+        <dt>Location</dt>
         <dd>School of Aerospace Engineering, Beijing Institute of Technology · Beijing, China</dd>
       </div>
     </dl>
@@ -148,10 +146,9 @@ const links = [
 
   dt {
     margin: 0;
-    font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--global-text-color-light);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--global-text-color);
   }
 
   dd {

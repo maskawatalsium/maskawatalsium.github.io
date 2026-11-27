@@ -1,0 +1,43 @@
+---
+import Study from '@components/Study.astro';
+import { site } from '@config/site';
+import Page from '@layouts/Page.astro';
+import { withBase } from '@utils/base';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects', (p) => p.data.category !== 'research');
+  return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}
+
+const { project } = Astro.props;
+---
+
+<Page title={project.data.title} description={project.data.description ?? site.description}>
+  <div class="post">
+    <nav aria-label="Breadcrumb" class="crumb">
+      <a href={withBase('/projects/')}>&larr; All projects</a>
+    </nav>
+    <Study entry={project} asPage />
+  </div>
+</Page>
+
+<style>
+  .post {
+    padding-top: 0;
+  }
+
+  .crumb {
+    margin-bottom: 1.25rem;
+    font-size: 0.92rem;
+  }
+
+  .crumb a {
+    color: var(--global-theme-color);
+    text-decoration: none;
+  }
+
+  .crumb a:hover {
+    text-decoration: underline;
+  }
+</style>

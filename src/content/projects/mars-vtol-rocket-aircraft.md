@@ -4,7 +4,6 @@ description: '"Ares Kestrel" — a two-crew, LH₂/LO₂ rocket aircraft for run
 importance: 1
 period: Jul 2026
 affiliation: Modern Aircraft Configuration Design · Beijing Institute of Technology
-role: Individual project — configuration, OpenVSP model, mass and performance analysis
 methods: [Configuration trade study, mass budget from component point masses, rocket equation, thrust-to-weight analysis]
 tools: [OpenVSP, MATLAB]
 figures:

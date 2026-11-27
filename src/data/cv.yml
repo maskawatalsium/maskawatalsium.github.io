@@ -36,8 +36,9 @@ cv:
           - 'Cumulative GPA 3.80 / 5.00; ranked in the top 10 % of the class every year'
           - 'Thesis: Investigation of the Temperature and Discharge Characteristics of High-Current Hollow Cathode (supervisor: Dr. Zhang Hui)'
 
-    experience:
-      - company: Beijing Institute of Technology
+    # Research entries: shown on the CV page; the Research page covers them in depth.
+    research:
+      - company: High-Power Electric Propulsion Lab, Beijing Institute of Technology
         position: Research Assistant — ExB probe for ion-velocity diagnostics
         location: Beijing, China
         start_date: 2025-09
@@ -57,35 +58,37 @@ cv:
           - 'Measured 920–1,470 K (≈400 K gradient), negative-resistance voltage behaviour and a plume-to-spot transition at 30–35 A over 10–50 A and 5–20 sccm xenon'
           - 'Validated a 0-D MATLAB plasma-thermal model against the data; it captured the trends but over-predicted temperature by about 18 % at 50 A'
 
+    experience:
+      - company: Beijing Renhe Huizhi Information Technology Co., Ltd.
+        position: Systems Testing & Validation
+        location: Haidian District, Beijing · contract, hybrid
+        start_date: 2026-05
+        end_date: present
+        highlights:
+          - 'Test a web-based manuscript-submission and peer-review system end to end across the author, reviewer, editor and administrator roles'
+          - 'Trace complete workflows — submission, reviewer assignment, review, revision, editorial decision, notifications and permissions — and document defects, edge cases and usability issues'
+          - 'Verify new features and fixes through functional, regression and role-based testing, working with the development team'
+
       - company: Beijing Renhe Huizhi Information Technology Co., Ltd.
         position: Scholarly Content Analyst
-        location: Beijing, China
+        location: Changping District, Beijing · contract, hybrid
         start_date: 2025-12
-        end_date: 2026-09
+        end_date: present
         highlights:
-          - 'Annotated engineering research papers using the CoreSC, AZ-II and CiTO frameworks to structure scientific content and citation relationships'
-          - 'Tested a scholarly annotation platform, documented usability issues and worked with developers and researchers on workflow improvements'
+          - 'Annotate peer-reviewed engineering papers with the CoreSC, AZ-II and CiTO frameworks to structure scientific content and citation relationships'
+          - 'Test features of a proprietary scholarly-annotation platform and feed back improvements to its workflow and usability'
 
-      - company: Customer Umbrella
-        position: Customer Consultancy
-        location: Varna, Bulgaria
-        start_date: 2022-09
-        end_date: 2023-04
-
-      - company: Matrix Academic and Admission Coaching Center
-        position: Instructor / Chemistry Mentor
-        location: Ghoraghat, Bangladesh
-        start_date: 2021-08
+      - company: CustomerUmbrella
+        position: Customer Support Consultant (part-time)
+        location: Remote
+        start_date: 2022-10
         end_date: 2023-03
-
-      - company: Ghoraghat KC Pilot School and College
-        position: Physics Instructor (short-term)
-        location: Ghoraghat, Bangladesh
-        start_date: 2021-10
-        end_date: 2022-09
+        highlights:
+          - 'Supported customers of international gaming clients for a global business-services company, as part of a distributed remote team'
+          - 'Worked day to day with Slack and IT-operations tools as part of the support team'
 
       - company: NCEPU International Students' Union
-        position: Operation and Event Planner; volunteer for incoming international students
+        position: Operation and Event Planner, Academic Department
         location: Beijing, China
         start_date: 2023-12
         end_date: 2025-06
@@ -95,7 +98,7 @@ cv:
       - company: Bangladesh–China Youth Student Association (BCYSA)
         position: Campus Ambassador
         location: Beijing, China
-        start_date: 2024-03
+        start_date: 2023-07
         end_date: 2026-10
         highlights:
           - 'Coordinated cultural-exchange events and managed communication with members and external partners'
@@ -143,11 +146,21 @@ cv:
         highlights:
           - 'For ranking at the top of the class with excellent academic results and overall achievements'
 
+      - name: Certificate of Recognition — BCYSA Campus Ambassador
+        date: '2024'
+        issuer: Bangladesh–China Youth Student Association
+        highlights:
+          - 'For a one-year term as Campus Ambassador (Jul 2023 – Aug 2024) strengthening Bangladesh–China cultural exchange'
+
       - name: Certificate of Appreciation
         date: '2024'
         issuer: International Education Institute, NCEPU
         highlights:
           - "For organising activities in the Academic Department of the International Students' Union (Dec 2023 – Jul 2024)"
+
+      - name: First Prize, 52nd Victory Day Cultural Competition
+        date: '2023'
+        issuer: Bangladesh–China Youth Student Association
 
       - name: Beijing Government Excellence Students Award
         date: '2021–2025'
@@ -157,10 +170,25 @@ cv:
         date: '2021'
         issuer: Beijing Municipal Government
 
-      - name: Competitor, Inter-School Physics Competition
-        date: '2022'
-
       - name: Scout Award
+
+    # Volunteering and participation certificates (Skills page, "Recognition & volunteering").
+    recognition:
+      - name: Volunteer, New Student Registration
+        date: '2024'
+        issuer: International Education Institute, NCEPU (Aug 2024)
+      - name: Volunteer, Graduate Students Convocation
+        date: '2024'
+        issuer: International Education Institute, NCEPU (Jun 2024)
+      - name: Volunteer, 11th Inspiration English Club
+        date: '2024'
+        issuer: International Education Institute, NCEPU
+      - name: Performer, 5th International Cultural Festival
+        date: '2024'
+        issuer: North China Electric Power University
+      - name: Participant, Writer of the Campus 2023
+        date: '2023'
+        issuer: Bangladesh–China Youth Student Association
 
     skills:
       - label: Modelling & simulation

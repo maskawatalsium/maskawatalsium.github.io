@@ -14,47 +14,69 @@ const isSticky = site.footer.position === 'sticky';
 const footerStyle = [
   'background-color: var(--global-footer-bg-color);',
   'color: var(--global-footer-text-color);',
-  'padding: 1rem 0;',
+  'padding: 0.45rem 0;',
   isSticky ? 'position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;' : 'margin-top: auto;',
 ].join(' ');
 ---
 
 <footer style={footerStyle}>
-  <div class="page-container text-center text-sm">
-    <SocialLinks class="footer-social justify-center" size={17} />
-    <p>
+  <div class="page-container footer-row text-sm">
+    <SocialLinks class="footer-social" size={15} />
+    <span class="footer-sep" aria-hidden="true"></span>
+    <p class="footer-text">
       &copy; {year}
       {site.author.name}.
       {site.footer.text && <span set:html={site.footer.text} />}
       {site.footer.lastUpdated && <span class="ml-2">Last updated: {lastUpdated}.</span>}
-    </p>
-    {
-      site.footer.impressum && (
-        <p class="mt-1">
-          <a
-            href={site.footer.impressum}
-            style="color: var(--global-footer-link-color); text-decoration: none;"
-          >
+      {
+        site.footer.impressum && (
+          <a href={site.footer.impressum} class="ml-2">
             Legal Notice
           </a>
-        </p>
-      )
-    }
+        )
+      }
+    </p>
   </div>
 </footer>
 
 <style>
-  footer a {
-    color: var(--global-footer-link-color);
+  .footer-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem 1rem;
   }
 
-  footer :global(.footer-social) {
-    gap: 1.4rem;
-    margin-bottom: 0.45rem;
+  .footer-row :global(.footer-social) {
+    gap: 0.95rem;
+    align-items: center;
+  }
+
+  .footer-sep {
+    width: 1px;
+    height: 0.9rem;
+    background: currentColor;
+    opacity: 0.35;
+  }
+
+  .footer-text {
+    margin: 0;
+    font-size: 0.8rem;
+  }
+
+  footer a {
+    color: var(--global-footer-link-color);
   }
 
   footer a:hover {
     color: var(--global-footer-text-color);
     text-decoration: underline;
+  }
+
+  @media (max-width: 560px) {
+    .footer-sep {
+      display: none;
+    }
   }
 </style>
