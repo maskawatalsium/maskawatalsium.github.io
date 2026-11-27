@@ -1,4 +1,5 @@
 ---
+import Gallery from '@components/Gallery.astro';
 import SectionHead from '@components/SectionHead.astro';
 import { site } from '@config/site';
 import Page from '@layouts/Page.astro';
@@ -27,6 +28,32 @@ const firstYear = (a: RenderCVEntry) => Number(String(a.date ?? '').match(/\d{4}
 const byYear = (a: RenderCVEntry, b: RenderCVEntry) => firstYear(b) - firstYear(a);
 const awards = ((sections.awards ?? []) as RenderCVEntry[]).sort(byYear);
 const recognition = ((sections.recognition ?? []) as RenderCVEntry[]).sort(byYear);
+const seminars = ((sections.seminars ?? []) as RenderCVEntry[]).sort(byYear);
+
+// Scans of the certificates behind the lists above (public/assets/img/certificates/).
+const cert = (n: number, caption: string) => ({
+  src: `/assets/img/certificates/cert-${String(n).padStart(2, '0')}.jpg`,
+  caption,
+});
+const certificates = [
+  cert(9, 'First Prize, 52nd Victory Day Cultural Competition 2023 — BCYSA'),
+  cert(5, 'Certificate of Recognition, BCYSA Campus Ambassador (Jul 2023 – Aug 2024)'),
+  cert(1, "Certificate of Appreciation — International Students' Union, NCEPU (2024)"),
+  cert(8, 'Letter confirming membership of the ISU Academic Department (Dec 2023 – Jul 2024)'),
+  cert(7, 'Volunteer letter — New Student Registration, Aug 2024'),
+  cert(6, 'Volunteer letter — Graduate Students Convocation 2024'),
+  cert(4, 'Volunteer Certificate — 11th Inspiration English Club (Jun 2024)'),
+  cert(3, 'Participation Certificate — 5th International Cultural Festival, NCEPU (May 2024)'),
+  cert(10, 'Participation — Writer of the Campus 2023, BCYSA'),
+  cert(
+    2,
+    'Certificate of Recognition — SRII online seminar "Innovating Global Knowledge Economy" (May 2024)',
+  ),
+  cert(14, 'Attendance — 2024 National Science Popularization Day webinar (Sep 2024)'),
+  cert(11, 'Attendance — Master and Ph.D. Research and Thesis Guidance Seminar (Jun 2024)'),
+  cert(12, 'Attendance — 2024 National Science and Technology Workers Day Seminar (May 2024)'),
+  cert(13, 'Attendance — University of Liverpool lecture by Prof. Alan Marshall (Mar 2024)'),
+];
 ---
 
 <Page title="Skills" description={`Skills and achievements of ${site.author.name}`}>
@@ -90,6 +117,29 @@ const recognition = ((sections.recognition ?? []) as RenderCVEntry[]).sort(byYea
         </>
       )
     }
+
+    {
+      seminars.length > 0 && (
+        <>
+          <h2 class="block-title">Seminars &amp; lectures</h2>
+          <ul class="recog">
+            {seminars.map((r) => (
+              <li>
+                <span class="recog-year">{r.date}</span>
+                <span>
+                  <strong>{r.name}</strong>
+                  {r.issuer && <span class="recog-issuer"> — {r.issuer}</span>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )
+    }
+
+    <h2 class="block-title">Certificates</h2>
+    <p class="block-sub">Click a certificate to view it full size.</p>
+    <Gallery figures={certificates} />
   </div>
 </Page>
 
@@ -163,6 +213,12 @@ const recognition = ((sections.recognition ?? []) as RenderCVEntry[]).sort(byYea
     font-size: 1.35rem;
     font-weight: 700;
     color: var(--global-text-color);
+  }
+
+  .block-sub {
+    margin: -0.5rem 0 0;
+    font-size: 0.95rem;
+    color: var(--global-text-color-light);
   }
 
   .awards {

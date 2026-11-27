@@ -99,7 +99,7 @@ cv:
         position: Campus Ambassador
         location: Beijing, China
         start_date: 2023-07
-        end_date: 2026-10
+        end_date: 2024-08
         highlights:
           - 'Coordinated cultural-exchange events and managed communication with members and external partners'
 
@@ -176,19 +176,40 @@ cv:
     recognition:
       - name: Volunteer, New Student Registration
         date: '2024'
-        issuer: International Education Institute, NCEPU (Aug 2024)
-      - name: Volunteer, Graduate Students Convocation
+        issuer: International Education Institute, NCEPU · 30–31 Aug 2024
+      - name: Volunteer, Graduate Students Convocation 2024
         date: '2024'
-        issuer: International Education Institute, NCEPU (Jun 2024)
+        issuer: International Education Institute, NCEPU · Jun 2024
       - name: Volunteer, 11th Inspiration English Club
         date: '2024'
-        issuer: International Education Institute, NCEPU
+        issuer: International Education Institute, NCEPU · Jun 2024
       - name: Performer, 5th International Cultural Festival
         date: '2024'
-        issuer: North China Electric Power University
-      - name: Participant, Writer of the Campus 2023
+        issuer: International Education Institute, NCEPU · May 2024
+      - name: Member, Academic Department of the International Students' Union
+        date: '2024'
+        issuer: North China Electric Power University · Dec 2023 – Jul 2024
+      - name: Participant, Writer of the Campus 2023 competition
         date: '2023'
-        issuer: Bangladesh–China Youth Student Association
+        issuer: Bangladesh–China Youth Student Association · Dec 2023
+
+    # Seminars and lectures attended (certificates of attendance / recognition).
+    seminars:
+      - name: 2024 National Science Popularization Day webinar
+        date: '2024'
+        issuer: China Energy Research Association · 12 Sep 2024
+      - name: Introduction to Master and Ph.D. Research and Thesis Guidance Seminar
+        date: '2024'
+        issuer: International Education Institute, NCEPU · 21 Jun 2024
+      - name: 2024 National Science and Technology Workers Day Seminar
+        date: '2024'
+        issuer: China Energy Research Society and China Electric Power Research Institute · 30 May 2024
+      - name: '"Innovating Global Knowledge Economy" online seminar (Certificate of Recognition)'
+        date: '2024'
+        issuer: Service Research & Innovation Institute (SRII) · 5 May 2024
+      - name: '"University of Liverpool Report Meeting" lecture by Prof. Alan Marshall'
+        date: '2024'
+        issuer: International Education Institute, NCEPU · 8 Mar 2024
 
     skills:
       - label: Modelling & simulation
